@@ -40,6 +40,8 @@ namespace FinalClick.ProjectSettings.Editor
 
                 guiHandler = _ =>
                 {
+                    EditorGUI.BeginChangeCheck();
+                    
                     if (_editorCaches.TryGetValue(type, out UnityEditor.Editor editor) == false)
                     {
                         editor = UnityEditor.Editor.CreateEditor(settings);
@@ -48,7 +50,12 @@ namespace FinalClick.ProjectSettings.Editor
 
                     editor.OnInspectorGUI();
 
-                    ProjectSettingsDatabase.Save(settings);
+                    if (EditorGUI.EndChangeCheck() == true)
+                    {
+                        UnityEditor.EditorUtility.SetDirty(settings);                        
+                        ProjectSettingsDatabase.Save(settings);
+                    }
+
                 }
             };
         }

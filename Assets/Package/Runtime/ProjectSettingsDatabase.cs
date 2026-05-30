@@ -55,6 +55,7 @@ namespace FinalClick.ProjectSettings
             }
             
             UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { configObject }, attribute.GetFilePathToSettingsAsset(configObject.GetType()), true);
+            _cachedProjectSettings.Remove(configObject.GetType());
 #endif
         }
 
