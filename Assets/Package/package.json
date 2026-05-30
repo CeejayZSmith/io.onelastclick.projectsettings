@@ -1,0 +1,17 @@
+{
+    "name": "io.finalclick.projectsettings",
+    "displayName": "FinalClick - Project Settings",
+    "author": {
+        "name": "FinalClick",
+        "url": "https://github.com/FinalClick"
+    },
+    "keywords": [
+        "settings",
+        "config",
+        "prject"
+    ],
+    "version": "1.0.0",
+    "unity": "2019.4",
+    "description": "An easy way to define project settings to access via editor or runtime code.",
+    "dependencies": {}
+}
