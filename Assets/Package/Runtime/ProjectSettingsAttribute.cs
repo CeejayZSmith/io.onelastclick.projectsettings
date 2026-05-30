@@ -50,10 +50,10 @@ namespace FinalClick.ProjectSettings
             
             if (string.IsNullOrEmpty(_settingsProviderDirectory) == true)
             {
-                return $"Project/{GetSettingsProviderName(type)}";
+                return $"Project/{name}";
             }
 
-            return $"Project/{_settingsProviderDirectory}/{GetSettingsProviderName(type)}";
+            return $"Project/{_settingsProviderDirectory}/{name}";
         }
         public ProjectSettingsAttribute(string fileName = null, string fileDirectory = null, string settingsProviderName = null, string settingsProviderDirectory = null)
         {

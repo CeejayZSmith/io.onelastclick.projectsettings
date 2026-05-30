@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -37,7 +36,7 @@ namespace FinalClick.ProjectSettings.Editor
                 attribute.GetSettingsProviderPath(type),
                 SettingsScope.Project)
             {
-                label = type.Name,
+                label = attribute.GetSettingsProviderName(type),
 
                 guiHandler = _ =>
                 {
@@ -49,7 +48,7 @@ namespace FinalClick.ProjectSettings.Editor
 
                     editor.OnInspectorGUI();
 
-                    ProjectSettingsDatabase.Save(type, settings);
+                    ProjectSettingsDatabase.Save(settings);
                 }
             };
         }

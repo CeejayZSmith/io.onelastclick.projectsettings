@@ -35,7 +35,7 @@ namespace FinalClick.ProjectSettings
             }
             
             ScriptableObject settings = ScriptableObject.CreateInstance(type);
-            Save(type, settings);
+            Save(settings);
             Debug.Log("Creating new Settings asset.");
             return settings;
 #else
@@ -44,17 +44,17 @@ namespace FinalClick.ProjectSettings
         }
 
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        public static void Save(Type type, UnityEngine.Object configObject)
+        public static void Save(UnityEngine.Object configObject)
         {
 #if UNITY_EDITOR
-            var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
+            var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(configObject.GetType());
 
             if (configObject is IProjectSettingsPreSaveProcessor preSaveProcessor)
             {
                 preSaveProcessor.OnPreSave();
             }
             
-            UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { configObject }, attribute.GetFilePathToSettingsAsset(type), true);
+            UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { configObject }, attribute.GetFilePathToSettingsAsset(configObject.GetType()), true);
 #endif
         }
 
