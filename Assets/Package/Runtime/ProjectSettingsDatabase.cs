@@ -31,6 +31,7 @@ namespace FinalClick.ProjectSettings
             {
                 Debug.Assert(loadedObjects.Length == 1, "Too many objects were loaded.");
                 Debug.Assert(type.IsAssignableFrom(loadedObjects[0].GetType()), $"saved object is not a {type.FullName}");
+                _cachedProjectSettings.Add(type, loadedObjects[0]);
                 return loadedObjects[0];
             }
             
