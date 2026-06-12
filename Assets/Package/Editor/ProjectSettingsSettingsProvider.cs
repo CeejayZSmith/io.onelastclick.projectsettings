@@ -42,7 +42,7 @@ namespace FinalClick.ProjectSettings.Editor
                 {
                     EditorGUI.BeginChangeCheck();
                     
-                    if (_editorCaches.TryGetValue(type, out UnityEditor.Editor editor) == false)
+                    if (_editorCaches.TryGetValue(type, out UnityEditor.Editor editor) == false || editor == null)
                     {
                         editor = UnityEditor.Editor.CreateEditor(settings);
                         _editorCaches[type] = editor;
