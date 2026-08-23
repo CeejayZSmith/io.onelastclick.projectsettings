@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FinalClick.ProjectSettings
 {
     [DefaultExecutionOrder(-1000)]
-    internal partial class ProjectSettingsRegisterer : MonoBehaviour
+    internal class ProjectSettingsRegisterer : MonoBehaviour
     {
         [SerializeField] private ScriptableObject[] _references;
 
@@ -23,6 +23,11 @@ namespace FinalClick.ProjectSettings
                 Type projectSettingsType = reference.GetType();
                 ProjectSettingsDatabase.Register(projectSettingsType, reference);
             }
+        }
+
+        public void SetRuntimeProjectSettings(ScriptableObject[] projectSettings)
+        {
+            _references = projectSettings;
         }
     }
 }

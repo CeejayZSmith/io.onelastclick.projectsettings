@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -13,7 +12,7 @@ namespace FinalClick.ProjectSettings.Editor
         {
             try
             {
-                return ProjectSettingsAttribute.GetAllProjectSettingTypes().Select(CreateProvider).ToArray();
+                return ProjectSettingsEditorResolver.GetAllTypesWithProjectSettingAttribute().Select(CreateProvider).ToArray();
             }
             catch (Exception e)
             {
@@ -24,24 +23,24 @@ namespace FinalClick.ProjectSettings.Editor
 
         private static SettingsProvider CreateProvider(Type type)
         {
-            var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
-            var settings = ProjectSettingsDatabase.Get(type);
+            var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
 
             UnityEditor.Editor editor = null;
 
-            return new SettingsProvider(attribute.GetSettingsProviderPath(type), SettingsScope.Project)
+            return new SettingsProvider(ProjectSettingsEditorResolver.GetSettingsProviderPath(type), SettingsScope.Project)
             {
-                label = attribute.GetSettingsProviderName(type),
+                label = ProjectSettingsEditorResolver.GetSettingsProviderName(type),
 
                 guiHandler = _ =>
                 {
                     UnityEditor.Editor.CreateCachedEditor(settings, null, ref editor);
+                    EditorGUI.BeginChangeCheck();
+                    
                     editor.OnInspectorGUI();
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        EditorUtility.SetDirty(settings);
-                        ProjectSettingsDatabase.Save(settings);
+                        ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
                     }
                 },
 

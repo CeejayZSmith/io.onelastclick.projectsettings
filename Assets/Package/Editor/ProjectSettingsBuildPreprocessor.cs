@@ -1,4 +1,6 @@
-﻿using UnityEditor.Build;
+﻿using System;
+using System.Linq;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -37,7 +39,23 @@ namespace FinalClick.ProjectSettings.Editor
         {
             var gameObject = new GameObject("ProjectSettingsRegisterer");
             var registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
-            registerer.UpdateReferences();
+            ScriptableObject[] copies = GetCopiesOfProjectSettings();
+            registerer.SetRuntimeProjectSettings(copies);
+        }
+
+        private static ScriptableObject[]  GetCopiesOfProjectSettings()
+        {
+            Type[] types = ProjectSettingsEditorResolver.GetAllTypesWithProjectSettingAttribute()
+                .Where(type => ProjectSettingsEditorResolver.GetProjectSettingsAttribute(type).EditorOnly == false)
+                .ToArray();
+            ScriptableObject[] projectSettingsCopies = new ScriptableObject[types.Length];
+            for (var i = 0; i < types.Length; i++)
+            {
+                Type type = types[i];
+                projectSettingsCopies[i] = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+            }
+
+            return  projectSettingsCopies;
         }
     }
 }

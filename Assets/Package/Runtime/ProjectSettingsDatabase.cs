@@ -1,74 +1,57 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace FinalClick.ProjectSettings
 {
     public static class ProjectSettingsDatabase
     {
-        private static readonly Dictionary<Type, ScriptableObject> _cachedProjectSettings = new Dictionary<Type, ScriptableObject>();
+        private static readonly Dictionary<Type, ScriptableObject> CachedProjectSettings = new Dictionary<Type, ScriptableObject>();
 
         public static T Get<T>() where T : ScriptableObject
         {
             return Get(typeof(T)) as T;
         }
+
         public static ScriptableObject Get(Type type)
         {
+            if (Application.isPlaying == false)
+            {
+                throw new InvalidOperationException("This should not be called outside of playmode as no settings will be registered yet. Use ProjectSettingsEditorDatabase instead.");
+            }
+            
             Debug.Assert(typeof(ScriptableObject).IsAssignableFrom(type), $"type is not assignable to scriptableobject from {type.FullName}");
             
-            if (_cachedProjectSettings.TryGetValue(type, out var cachedObject) == true)
+            if (CachedProjectSettings.TryGetValue(type, out var cachedObject) == true)
             {
                 return cachedObject;
             }
             
-#if UNITY_EDITOR
-            var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
-
-            if (attribute == null)
-            {
-                throw new ArgumentException("The specified type is not a project settings type. Add the attribute [ProjectSettings] to the type if you would like it to be a project settings." + type.FullName);
-            }
-            
-            var loadedObjects = UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(attribute.GetFilePathToSettingsAsset(type));
-            if (loadedObjects.Length > 0)
-            {
-                Debug.Assert(loadedObjects.Length == 1, "Too many objects were loaded.");
-                Debug.Assert(type.IsAssignableFrom(loadedObjects[0].GetType()), $"saved object is not a {type.FullName}");
-                ScriptableObject loadedScriptableObject = loadedObjects[0] as ScriptableObject;
-                _cachedProjectSettings.Add(type, loadedScriptableObject);
-                return loadedScriptableObject;
-            }
-            
-            ScriptableObject settings = ScriptableObject.CreateInstance(type);
-            Save(settings);
-            Debug.Log("Creating new Settings asset.");
-            return settings;
-#else
             throw new ArgumentException($"No project settings of type '{type}'");
-#endif
-        }
-
-        [System.Diagnostics.Conditional("UNITY_EDITOR")]
-        public static void Save(UnityEngine.Object configObject)
-        {
-#if UNITY_EDITOR
-            var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(configObject.GetType());
-
-            if (configObject is IProjectSettingsPreSaveProcessor preSaveProcessor)
-            {
-                preSaveProcessor.OnPreSave();
-            }
-            
-            UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { configObject }, attribute.GetFilePathToSettingsAsset(configObject.GetType()), true);
-            _cachedProjectSettings.Remove(configObject.GetType());
-#endif
         }
 
         internal static void Register(Type referenceType, ScriptableObject referenceValue)
         {
-            UnityEngine.Debug.Log("Registering " + referenceType.FullName + " to " + referenceValue);
-            _cachedProjectSettings.Add(referenceType, referenceValue);
+            Debug.Log("Registering " + referenceType.FullName + " to " + referenceValue);
+            CachedProjectSettings.Add(referenceType, referenceValue);
+        }
+        
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void OnSubsystemRegistration()
+        {
+            Application.quitting += OnApplicationQuitting;
+            ClearCachedProjectSettings();
+        }
+        
+        private static void ClearCachedProjectSettings()
+        {
+            CachedProjectSettings.Clear();
+        }
+
+        private static void OnApplicationQuitting()
+        {
+            Application.quitting -= OnApplicationQuitting;
+            ClearCachedProjectSettings();
         }
     }
 }
