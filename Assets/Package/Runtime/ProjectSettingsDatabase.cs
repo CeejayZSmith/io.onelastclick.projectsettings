@@ -7,13 +7,13 @@ namespace FinalClick.ProjectSettings
 {
     public static class ProjectSettingsDatabase
     {
-        private static readonly Dictionary<Type, UnityEngine.Object> _cachedProjectSettings = new Dictionary<Type, UnityEngine.Object>();
+        private static readonly Dictionary<Type, ScriptableObject> _cachedProjectSettings = new Dictionary<Type, ScriptableObject>();
 
         public static T Get<T>() where T : ScriptableObject
         {
             return Get(typeof(T)) as T;
         }
-        public static UnityEngine.Object Get(Type type)
+        public static ScriptableObject Get(Type type)
         {
             Debug.Assert(typeof(ScriptableObject).IsAssignableFrom(type), $"type is not assignable to scriptableobject from {type.FullName}");
             
@@ -24,15 +24,20 @@ namespace FinalClick.ProjectSettings
             
 #if UNITY_EDITOR
             var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
+
+            if (attribute == null)
+            {
+                throw new ArgumentException("The specified type is not a project settings type. Add the attribute [ProjectSettings] to the type if you would like it to be a project settings." + type.FullName);
+            }
             
-            var loadedObjects = UnityEditorInternal.InternalEditorUtility
-                .LoadSerializedFileAndForget(attribute.GetFilePathToSettingsAsset(type));
+            var loadedObjects = UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(attribute.GetFilePathToSettingsAsset(type));
             if (loadedObjects.Length > 0)
             {
                 Debug.Assert(loadedObjects.Length == 1, "Too many objects were loaded.");
                 Debug.Assert(type.IsAssignableFrom(loadedObjects[0].GetType()), $"saved object is not a {type.FullName}");
-                _cachedProjectSettings.Add(type, loadedObjects[0]);
-                return loadedObjects[0];
+                ScriptableObject loadedScriptableObject = loadedObjects[0] as ScriptableObject;
+                _cachedProjectSettings.Add(type, loadedScriptableObject);
+                return loadedScriptableObject;
             }
             
             ScriptableObject settings = ScriptableObject.CreateInstance(type);
@@ -40,7 +45,7 @@ namespace FinalClick.ProjectSettings
             Debug.Log("Creating new Settings asset.");
             return settings;
 #else
-            throw new NotImplementedException();
+            throw new ArgumentException($"No project settings of type '{type}'");
 #endif
         }
 

@@ -8,8 +8,6 @@ namespace FinalClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsSettingsProvider
     {
-        private static readonly Dictionary<Type, UnityEditor.Editor> _editorCaches = new Dictionary<Type, UnityEditor.Editor>();
-        
         [SettingsProviderGroup]
         public static SettingsProvider[] CreateSettingsProviders()
         {
@@ -24,17 +22,12 @@ namespace FinalClick.ProjectSettings.Editor
             }
         }
 
-        public static SettingsProvider CreateProvider(Type type)
+        private static SettingsProvider CreateProvider(Type type)
         {
-            var attribute =
-                ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
+            var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
+            var settings = ProjectSettingsDatabase.Get(type);
 
-            var settings =
-                ProjectSettingsDatabase.Get(type);
-
-            return new SettingsProvider(
-                attribute.GetSettingsProviderPath(type),
-                SettingsScope.Project)
+            return new SettingsProvider(attribute.GetSettingsProviderPath(type), SettingsScope.Project)
             {
                 label = attribute.GetSettingsProviderName(type),
 
@@ -42,12 +35,7 @@ namespace FinalClick.ProjectSettings.Editor
                 {
                     EditorGUI.BeginChangeCheck();
                     
-                    if (_editorCaches.TryGetValue(type, out UnityEditor.Editor editor) == false || editor == null)
-                    {
-                        editor = UnityEditor.Editor.CreateEditor(settings);
-                        _editorCaches[type] = editor;
-                    }
-
+                    var editor = UnityEditor.Editor.CreateEditor(settings);
                     editor.OnInspectorGUI();
 
                     if (EditorGUI.EndChangeCheck() == true)
@@ -55,7 +43,6 @@ namespace FinalClick.ProjectSettings.Editor
                         UnityEditor.EditorUtility.SetDirty(settings);                        
                         ProjectSettingsDatabase.Save(settings);
                     }
-
                 }
             };
         }

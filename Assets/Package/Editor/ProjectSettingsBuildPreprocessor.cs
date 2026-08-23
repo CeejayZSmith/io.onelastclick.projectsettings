@@ -8,10 +8,16 @@ namespace FinalClick.ProjectSettings.Editor
     public class ProjectSettingsBuildPreprocessor : IProcessSceneWithReport
     {
         public int callbackOrder => -1;
+        
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void EditorPlaymodeInitialize()
+        {
+            CreateBootRegisterer();
+        }
 
         public void OnProcessScene(Scene scene, BuildReport report)
         {
-            // ApplicationServivcesEditorInitializer handles in editor, as it needs to be created before the awake of other objects.
+            // EditorPlaymodeInitialize handles in editor, as it needs to be created before the awake of other objects.
             if(Application.isPlaying == true)
             {
                 return;
@@ -27,7 +33,7 @@ namespace FinalClick.ProjectSettings.Editor
             Debug.Log($"Injecting ProjectSettings into {scene.name}");
         }
 
-        public static void CreateBootRegisterer()
+        private static void CreateBootRegisterer()
         {
             var gameObject = new GameObject("ProjectSettingsRegisterer");
             var registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
