@@ -27,21 +27,30 @@ namespace FinalClick.ProjectSettings.Editor
             var attribute = ProjectSettingsAttribute.GetProjectSettingsAttribute(type);
             var settings = ProjectSettingsDatabase.Get(type);
 
+            UnityEditor.Editor editor = null;
+
             return new SettingsProvider(attribute.GetSettingsProviderPath(type), SettingsScope.Project)
             {
                 label = attribute.GetSettingsProviderName(type),
 
                 guiHandler = _ =>
                 {
-                    EditorGUI.BeginChangeCheck();
-                    
-                    var editor = UnityEditor.Editor.CreateEditor(settings);
+                    UnityEditor.Editor.CreateCachedEditor(settings, null, ref editor);
                     editor.OnInspectorGUI();
 
-                    if (EditorGUI.EndChangeCheck() == true)
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        UnityEditor.EditorUtility.SetDirty(settings);                        
+                        EditorUtility.SetDirty(settings);
                         ProjectSettingsDatabase.Save(settings);
+                    }
+                },
+
+                deactivateHandler = () =>
+                {
+                    if (editor != null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(editor);
+                        editor = null;
                     }
                 }
             };
