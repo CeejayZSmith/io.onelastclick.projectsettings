@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace FinalClick.ProjectSettings.Editor
@@ -35,7 +36,16 @@ namespace FinalClick.ProjectSettings.Editor
                 throw new ArgumentException("The specified type is not a project settings type. Add the attribute [ProjectSettings] to the type if you would like it to be a project settings." + type.FullName);
             }
             
-            var loadedObjects = UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(ProjectSettingsEditorResolver.GetFilePathToSettingsAsset(type));
+            
+            string path = ProjectSettingsEditorResolver.GetFilePathToSettingsAsset(type);
+
+            string directory = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(directory) == false)
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var loadedObjects = UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(path);
             if (loadedObjects.Length > 0)
             {
                 Debug.Assert(loadedObjects.Length == 1, "Too many objects were loaded.");
