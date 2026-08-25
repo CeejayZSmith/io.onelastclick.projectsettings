@@ -33,14 +33,25 @@ namespace FinalClick.ProjectSettings.Editor
                 guiHandler = _ =>
                 {
                     var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
-                    UnityEditor.Editor.CreateCachedEditor(settings, null, ref editor);
+
+                    UnityEditor.Editor.CreateCachedEditor(
+                        settings,
+                        null,
+                        ref editor);
+
+                    editor.serializedObject.Update();
+
                     EditorGUI.BeginChangeCheck();
-                    
+
                     editor.OnInspectorGUI();
 
                     if (EditorGUI.EndChangeCheck())
                     {
+                        editor.serializedObject.ApplyModifiedProperties();
+
+                        EditorUtility.SetDirty(settings);
                         ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
+                        UnityEngine.Object.DestroyImmediate(editor);
                     }
                 },
 
@@ -51,6 +62,8 @@ namespace FinalClick.ProjectSettings.Editor
                         UnityEngine.Object.DestroyImmediate(editor);
                         editor = null;
                     }
+                    
+                    ProjectSettingsEditorDatabase.ClearCacheForType(type);
                 }
             };
         }

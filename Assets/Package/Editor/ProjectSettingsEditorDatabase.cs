@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
 using UnityEngine;
 
 namespace FinalClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsEditorDatabase
     {
+        private static Dictionary<Type, ScriptableObject> EditorReferences = new();
+        
         public static T GetOrCreateDefault<T>() where T : class
         {
             return GetOrCreateDefault(typeof(T)) as T;
@@ -16,6 +17,16 @@ namespace FinalClick.ProjectSettings.Editor
         public static ScriptableObject GetOrCreateDefault(Type type)
         {
             Debug.Assert(typeof(ScriptableObject).IsAssignableFrom(type), $"type is not assignable to scriptableobject from {type.FullName}");
+
+            if (EditorReferences.TryGetValue(type, out ScriptableObject editorReferences) == true)
+            {
+                if (editorReferences != null)
+                {
+                    return editorReferences;
+                }
+                
+                EditorReferences.Remove(type);
+            }
             
             var attribute = ProjectSettingsEditorResolver.GetProjectSettingsAttribute(type);
 
@@ -38,10 +49,12 @@ namespace FinalClick.ProjectSettings.Editor
                 Debug.Assert(loadedObjects.Length == 1, "Too many objects were loaded.");
                 Debug.Assert(type.IsAssignableFrom(loadedObjects[0].GetType()), $"saved object is not a {type.FullName}");
                 ScriptableObject loadedScriptableObject = loadedObjects[0] as ScriptableObject;
+                EditorReferences.Add(type, loadedScriptableObject);
                 return loadedScriptableObject;
             }
             
             ScriptableObject settings = ScriptableObject.CreateInstance(type);
+            EditorReferences.Add(type, settings);
             SaveProjectSetting(settings);
             Debug.Log("Creating new Settings asset.");
             return settings;
@@ -58,6 +71,12 @@ namespace FinalClick.ProjectSettings.Editor
             
             string filePath = ProjectSettingsEditorResolver.GetFilePathToSettingsAsset(projectSettingsType);
             UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new UnityEngine.Object[] { configObject }, filePath, true);
+            EditorReferences.Remove(projectSettingsType);
+        }
+
+        public static void ClearCacheForType(Type type)
+        {
+            EditorReferences.Remove(type);
         }
     }
 }
