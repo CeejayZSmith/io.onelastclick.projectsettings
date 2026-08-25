@@ -23,7 +23,6 @@ namespace FinalClick.ProjectSettings.Editor
 
         private static SettingsProvider CreateProvider(Type type)
         {
-            var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
 
             UnityEditor.Editor editor = null;
 
@@ -33,6 +32,7 @@ namespace FinalClick.ProjectSettings.Editor
 
                 guiHandler = _ =>
                 {
+                    var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
                     UnityEditor.Editor.CreateCachedEditor(settings, null, ref editor);
                     EditorGUI.BeginChangeCheck();
                     

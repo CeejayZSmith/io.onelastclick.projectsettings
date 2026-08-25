@@ -4,30 +4,36 @@ using UnityEngine;
 namespace FinalClick.ProjectSettings
 {
     [DefaultExecutionOrder(-1000)]
-    internal class ProjectSettingsRegisterer : MonoBehaviour
+    internal partial class ProjectSettingsRegisterer : MonoBehaviour
     {
-        [SerializeField] private ScriptableObject[] _references;
+        [SerializeField] private BuiltProjectSettingsContainer _builtProjectSettingsContainer;
 
         private void Awake()
         {
-            UnityEngine.Debug.Log("Registering project settings");
-            DontDestroyOnLoad(gameObject);
-
-            if (_references == null)
+            if (Application.isPlaying == false)
             {
                 return;
             }
             
-            foreach (ScriptableObject reference in _references)
+            UnityEngine.Debug.Log("Registering project settings");
+            DontDestroyOnLoad(gameObject);
+
+            if (_builtProjectSettingsContainer == null)
             {
+                UnityEngine.Debug.LogError("No project settings container found.");
+                return;
+            }
+            
+            foreach (ScriptableObject reference in _builtProjectSettingsContainer.Settings)
+            {
+                if (reference == null)
+                {
+                    Debug.LogError("Missing project settings reference.");
+                    continue;
+                }
                 Type projectSettingsType = reference.GetType();
                 ProjectSettingsDatabase.Register(projectSettingsType, reference);
             }
-        }
-
-        public void SetRuntimeProjectSettings(ScriptableObject[] projectSettings)
-        {
-            _references = projectSettings;
         }
     }
 }
