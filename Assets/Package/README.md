@@ -1,207 +1,196 @@
-Installation: `"io.finalclick.services": "https://github.com/FinalClick/io.finalclick.services.git?path=/Assets/Package",`
+# OneFinalClick — Project Settings
 
-# FinalClick – Services
-**Unity Package:** `io.finalclick.services`
+A small lightweight Unity package that lets you store `ScriptableObject` settings in **Project Settings** instead of the `Assets` folder.
 
-A simple lightweight **service locator** and **dependency injection** system for Unity.  
-Use it to replace hard-referenced singletons with decoupled, testable services.
+Settings appear in **Edit → Project Settings**, are serialized into the project's `ProjectSettings` directory, and can be accessed at runtime without creating or managing assets yourself.
+
+## Installation
+
+Add the package to your `manifest.json`:
+
+```json
+{
+  "dependencies": {
+    "io.onefinalclick.projectsettings": "https://github.com/OneFinalClick/io.onefinalclick.projectsettings.git?path=/Assets/Package"
+  }
+}
+```
+
+---
+
+## Quick Start
+
+Add the attribute `[ProjectSettings]` to a ScriptableObject type.
+
+```csharp
+using OneFinalClick.ProjectSettings;
+using UnityEngine;
+
+[ProjectSettings]
+public class ExampleProjectSettings : ScriptableObject
+{
+    [SerializeField] public int IntValue;
+    [SerializeField] public GameObject Prefab;
+    [SerializeField] public string Message = "Hello, World!";
+}
+```
+
+<img width="1340" height="512" alt="image" src="https://github.com/user-attachments/assets/40403f98-bd71-45c6-8ff2-086b20d0b290" />
+
+
+The package will automatically:
+
+- Create a Project Settings entry.
+- Store the data in the project's `ProjectSettings` folder (not `Assets`).
+- Display the object, using its normal inspector, in the Project Settings
+
+You can edit it from **Edit → Project Settings → Example Project Settings**.
+
+---
+
+## Accessing Settings
+
+### Runtime
+
+For runtime settings, use `ProjectSettingsDatabase.Get<T>()`.
+
+```csharp
+var settings = ProjectSettingsDatabase.Get<ExampleProjectSettings>();
+
+Debug.Log(settings.Message);
+```
+
+The package automatically injects a runtime copy of every non-editor-only settings object into the first loaded scene, so `Get<T>()` always returns a valid instance.
+
+### Editor
+
+#### Getting
+
+In editor code, use `ProjectSettingsEditorDatabase.GetOrCreateDefault<T>()`.
+
+```csharp
+var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault<ExampleProjectSettings>();
+```
+
+If the settings file does not exist yet, it is created automatically.
+
+#### Saving/Modifying
+
+```csharp
+var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault<ExampleProjectSettings>();
+
+settings.IntValue = 42;
+ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
+```
+
+---
+
+## Customizing the Settings Entry
+
+`ProjectSettingsAttribute` accepts optional parameters for customizing where and how the settings appear.
+
+```csharp
+[ProjectSettings(
+    fileName: "Example.asset",
+    fileDirectory: "FinalClick",
+    settingsProviderName: "Example Settings",
+    settingsProviderDirectory: "FinalClick/Gameplay"
+)]
+public class ExampleProjectSettings : ScriptableObject
+{
+}
+```
+<img width="1330" height="456" alt="image" src="https://github.com/user-attachments/assets/d2e9a628-09c4-46a1-a28a-cf0a1e19bac2" />
+
+
+### Attribute Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `fileName` | Overrides the serialized file name stored in `ProjectSettings`. |
+| `fileDirectory` | Places the settings file inside a subdirectory within `ProjectSettings`. |
+| `settingsProviderName` | Changes the display name shown in the Project Settings window. |
+| `settingsProviderDirectory` | Places the settings page inside a nested Project Settings category. |
+| `editorOnly` | Marks the settings as editor-only. They are not included at runtime. |
 
 ### Example
-Instead of this:
-```csharp
-GameManager gameManager = GameManager.Instance;
-```
-
-Write this:
-```csharp
-GameManager gameManager = ApplicationServices.Get<GameManager>();
-```
-
-or this:
-```csharp
-GameManager gameManager = gameObject.GetService<GameManager>();
-```
----
-
-## Overview
-
-`FinalClick.Services` allows you to register and resolve services both at the Project/Application level or at an Individual Scene level. Services can be pure C# classes or MonoBehaviours if you require references to assets or scene objects.
-
----
-
-## Features
-
-- 🔍 **Automatic Service Discovery** via `RegisterServices` and `RegisterAsService` attributes.
-- 🧩 ***Automatic Dependency Injection** via the `InjectService` property attribute.
-- 💡 **Project Level Services** via `ApplicationServices`.
-- 🎬 **Scene-scoped Services** via `SceneServices`.
-- ⚙️ **Lifecycle Hooks** via the `IService` interface. (`OnServiceStart`, `OnServiceUpdate`, `OnServiceStop`)
-- 🚀 **Disable Domain Reload Support**: automatic start and stops services during scene load and unload, and when entering or exiting Play Mode.
-
-> *Automatic Dependency Injection can only be used within service
----
-
-## 🔍 Getting Services
-
-### Inside a Service
-
-```
-[InjectService] 
-            │
-            └─ SceneServices.Get<T>(scene)
-                │
-                └─ ApplicationServices.Get<T>()
-```
-
-Within a Service you can use the `[InjectService]` attribute on a property
 
 ```csharp
-[RegisterAsService]
-public class ExampleComponent : MonoBehavour
+[ProjectSettings(
+    settingsProviderDirectory: "FinalClick/Rendering",
+    settingsProviderName: "Lighting Settings"
+)]
+public class LightingProjectSettings : ScriptableObject
 {
-    [InjectService] 
-    private IMyService MyService { get; } = null;
-    
-    // ...
+    public Material DefaultMaterial;
 }
 ```
 
-The service will be injected into the backing field of the property.
+This appears under:
 
-> Note, the `InjectService` attribute can only be used if the **MonoBehaviour** or csharp **class** is a registered service.
-
-### Outside a Service
-
-> Note, there are corresponding `TryGet` functions for the following `Get` functions
-
-There are 3 ways to get services if the requester is not a service.
-
-```
-GameObject.GetService<T>()
-                │
-                └─ SceneServices.Get<T>(scene)
-                    │
-                    └─ ApplicationServices.Get<T>()
-```
-
-### GameObject Level
-
-```csharp
-ITimeService timeService = gameObject.GetService<ITimeService>;
-```
-
-This method requires access to a GameObject. It will first check if the scene the GameObject is in has the service it needs. If not found, it will then see if the Application has the service. This means you can have different service instances for each scene.
-
-### Scene Level
-
-```csharp
-ITimeService timeService = SceneServices.Get<ITimeService>(scene);
-```
-
-This will require a reference to a scene, usually via `gameObject.scene`. It will first check if the scene has the service it needs. If not, it will check the ApplicationServices
-
-### Application/Project Level
-
-```csharp
-ITimeService timeService = ApplicationServices.Get<ITimeService>(scene);
-```
-
-This can be called anywhere and requires no references to any Unity Object
-
-## ⚙️ Application Service Registration
-
-### Registering Pure C# Services
-
-To register services at the project/application level create a static method marked with the `[RegisterServices]` attribute.
-
-Example:
-
-```csharp
-[RegisterServices]
-public static void RegisterMyServices(ServiceCollectionBuilder builder)
-{
-    builder.Register<IMyService, MyService>();
-}
-```
-
-- The method must be `static`.
-- It must accept exactly **one parameter**: `ServiceCollectionBuilder`.
-- These methods are automatically called **before the first scene is loaded**.
-
-### Registering Unity MonoBehaviour Services
-
-> Using MonoBehaviours allows you to reference Assets/Unity Objects easily via the inspector. 
-
-Create a Prefab with your services. The services should be on the **root** GameObject of the prefab.
-```csharp
-[RegisterAsService]
-public class MyService : MonoBehavour
-{
-    ///
-}
-```
-or
-```csharp
-public class ServiceRegister : MonoBehavour
-{
-    [RegisterServices]
-    private void MyRegisterFunction(ServiceCollectionBuilder builder)
-    {
-        builder.Register<OtherService>(OtherService);
-    }
-}
-```
-Assign the prefab in the **Project Settings** under `FinalClick > Services`
-
-- Any `[RegisterServices]` methods on components on the prefab will be called with the application service collection builder.
-- Any `[RegisterServiceAs(Type[])]` components on the prefab will be automatically registered.
-
-This prefab will be automatically instantiated into the first scene that's loaded.
-
-> Note, at build time this prefab is instantiated into the first scene. This causes it to be unpacked and baked at build time so there is no instantiation costs in builds.
+> **Project Settings → FinalClick → Rendering → Lighting Settings**
 
 ---
 
-## ⚙️ Scene Service Registration
+## Editor-Only Settings
 
-Scene services can be registered via MonoBehaviours. However, the MonoBehaviour services must be on a **root** GameObject in the scene.
-
-1. Any `[RegisterServices]` methods on a **root** GameObjects MonoBehaviour will be called on scene load. 
-2. Any `[RegisterAsService]` MonoBehaviours, which are also on **roo** GameObjects, will be registered on scene load
-
----
-
-## Service Lifecycle (`IService`)
-
-For services that need structured startup, update, and shutdown behavior, implement the `IService` interface:
+Some settings are only needed by editor tools.
 
 ```csharp
-namespace FinalClick.Services
+[ProjectSettings(editorOnly: true)]
+public class BuildProjectSettings : ScriptableObject
 {
-    public interface IService
-    {
-        void OnServiceStart();
-        void OnServiceUpdate();
-        void OnServiceStop();
-    }
+    public string BuildOutputDirectory;
+    public bool EnableDevelopmentBuild;
 }
 ```
 
-| Method             | Application Service Called When | Scene Service Called When |
-|---------------------|-------------------|---------------------------|
-| `OnServiceStart()`  | On Application startup | On Scene Loaded           |
-| `OnServiceUpdate()` | Once per frame    | Once per frame            |
-| `OnServiceStop()`   | On Application shutdown | On Scene Unloaded         |
+These settings:
+
+- Are available through `ProjectSettingsEditorDatabase`.
+- Are shown in Project Settings.
+- Are **not** injected into runtime builds.
+- Cannot be retrieved with `ProjectSettingsDatabase.Get<T>()`.
 
 ---
 
-## Lifecycle Overview
+## Where Are Settings Stored?
 
-| Event                             | Action                                             |
-|-----------------------------------|---------------------------------------------------|
-| Entering Play Mode                | Application services are registered and started.  |
-| Loading a Scene                   | Scene services are registered and started.        |
-| Unloading a Scene                 | Scene services are stopped.                       |
-| Exiting Play Mode / Application Quit | Application and scene services are stopped.      |
+Settings are serialized into Unity's `ProjectSettings` folder rather than `Assets`.
+
+Example project structure:
+
+```text
+ProjectSettings/
+├── ExampleProjectSettings.asset
+└── OneFinalClick/
+    └── Example.asset
+```
 
 ---
+
+## How It Works
+
+1. Any `ScriptableObject` marked with `[ProjectSettings]` is discovered automatically.
+2. A `SettingsProvider` is registered for it.
+3. Unity renders the object using the standard inspector.
+4. Changes are saved immediately back into the `ProjectSettings` file.
+5. For non-editor-only settings, a runtime instance is made available through `ProjectSettingsDatabase.Get<T>()`.
+
+---
+
+## API Summary
+
+| API | Description |
+|-----|-------------|
+| `ProjectSettingsDatabase.Get<T>()` | Returns the runtime instance of a project settings object. |
+| `ProjectSettingsEditorDatabase.GetOrCreateDefault<T>()` | Loads or creates the editor settings asset. |
+| `ProjectSettingsEditorDatabase.SaveProjectSetting()` | Persists changes made from editor code. |
+
+---
+
+## Notes
+
+- Only classes deriving from `ScriptableObject` should be marked with `[ProjectSettings]`.
+- The inspector supports any serializable Unity fields (`SerializeField`, `SerializeReference`, nested serializable types, object references, etc.).
+- Runtime access is only available for settings that are **not** marked `editorOnly`.
