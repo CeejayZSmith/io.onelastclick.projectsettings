@@ -1,4 +1,4 @@
-using FinalClick.ProjectSettings;
+using OneFinalClick.ProjectSettings;
 using UnityEngine;
 
 public class TestProjectSettingsGetter : MonoBehaviour

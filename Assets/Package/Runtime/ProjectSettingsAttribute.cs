@@ -6,7 +6,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace FinalClick.ProjectSettings
+namespace OneFinalClick.ProjectSettings
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class ProjectSettingsAttribute : Attribute

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace FinalClick.ProjectSettings
+namespace OneFinalClick.ProjectSettings
 {
     [DefaultExecutionOrder(-1000)]
     internal partial class ProjectSettingsRegisterer : MonoBehaviour

@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace FinalClick.ProjectSettings
+namespace OneFinalClick.ProjectSettings
 {
     internal partial class ProjectSettingsRegisterer
     {

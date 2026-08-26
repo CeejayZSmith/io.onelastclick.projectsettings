@@ -1,12 +1,8 @@
 {
-    "name": "FinalClick.ProjectSettings.Editor",
-    "rootNamespace": "FinalClick.ProjectSettings.Editor",
-    "references": [
-        "FinalClick.ProjectSettings.Runtime"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "name": "OneFinalClick.ProjectSettings.Runtime",
+    "rootNamespace": "OneFinalClick.ProjectSettings",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

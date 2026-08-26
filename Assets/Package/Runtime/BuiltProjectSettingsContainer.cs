@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace FinalClick.ProjectSettings
+namespace OneFinalClick.ProjectSettings
 {
     internal partial class BuiltProjectSettingsContainer : ScriptableObject
     {
