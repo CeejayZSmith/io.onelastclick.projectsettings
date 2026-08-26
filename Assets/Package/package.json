@@ -1,9 +1,9 @@
 {
-    "name": "io.finalclick.projectsettings",
-    "displayName": "FinalClick - Project Settings",
+    "name": "io.onefinalclick.projectsettings",
+    "displayName": "OneFinalClick - Project Settings",
     "author": {
-        "name": "FinalClick",
-        "url": "https://github.com/FinalClick"
+        "name": "OneFinalClick",
+        "url": "io.onefinalclick"
     },
     "keywords": [
         "settings",
