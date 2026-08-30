@@ -10,7 +10,7 @@ namespace OneLastClick.ProjectSettings.Editor
 {
     public class ProjectSettingsBuildPreprocessor : IProcessSceneWithReport, IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
-        private const string GeneratedTempDirectoryName = "_FinalClickBuildTemp";
+        private const string GeneratedTempDirectoryName = "_OneLastClickBuildTemp";
         private const string GeneratedDirectory = "Assets/" + GeneratedTempDirectoryName;
         private const string GeneratedContainerFilePath = GeneratedDirectory + "/BuiltProjectSettingsContainer.asset";
         
