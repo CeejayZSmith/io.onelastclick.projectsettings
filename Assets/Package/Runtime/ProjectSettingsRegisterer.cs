@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace OneFinalClick.ProjectSettings
+namespace OneLastClick.ProjectSettings
 {
     [DefaultExecutionOrder(-1000)]
     internal partial class ProjectSettingsRegisterer : MonoBehaviour
@@ -15,12 +15,12 @@ namespace OneFinalClick.ProjectSettings
                 return;
             }
             
-            UnityEngine.Debug.Log("Registering project settings");
+            Debug.Log("Registering project settings");
             DontDestroyOnLoad(gameObject);
 
             if (_builtProjectSettingsContainer == null)
             {
-                UnityEngine.Debug.LogError("No project settings container found.");
+                Debug.LogError("No project settings container found.");
                 return;
             }
             

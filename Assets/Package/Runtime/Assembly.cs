@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("OneFinalClick.ProjectSettings.Editor")]
+[assembly:InternalsVisibleTo("OneLastClick.ProjectSettings.Editor")]

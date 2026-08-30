@@ -1,4 +1,4 @@
-﻿namespace OneFinalClick.ProjectSettings
+﻿namespace OneLastClick.ProjectSettings
 {
     public interface IProjectSettingsPreSaveProcessor
     {

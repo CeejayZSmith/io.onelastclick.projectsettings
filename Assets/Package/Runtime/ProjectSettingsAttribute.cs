@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using JetBrains.Annotations;
-using UnityEngine;
 
-namespace OneFinalClick.ProjectSettings
+namespace OneLastClick.ProjectSettings
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class ProjectSettingsAttribute : Attribute

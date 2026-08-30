@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OneFinalClick.ProjectSettings
+namespace OneLastClick.ProjectSettings
 {
     public static class ProjectSettingsDatabase
     {

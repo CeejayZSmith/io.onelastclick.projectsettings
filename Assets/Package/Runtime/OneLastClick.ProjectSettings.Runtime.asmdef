@@ -1,6 +1,6 @@
 {
-    "name": "OneFinalClick.ProjectSettings.Runtime",
-    "rootNamespace": "OneFinalClick.ProjectSettings",
+    "name": "OneLastClick.ProjectSettings.Runtime",
+    "rootNamespace": "OneLastClick.ProjectSettings",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

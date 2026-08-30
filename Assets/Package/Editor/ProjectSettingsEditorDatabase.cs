@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace OneFinalClick.ProjectSettings.Editor
+namespace OneLastClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsEditorDatabase
     {

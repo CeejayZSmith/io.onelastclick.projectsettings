@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace OneFinalClick.ProjectSettings.Editor
+namespace OneLastClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsEditorResolver
     {

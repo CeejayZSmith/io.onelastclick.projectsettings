@@ -1,8 +1,8 @@
 {
-    "name": "OneFinalClick.ProjectSettings.Editor",
-    "rootNamespace": "OneFinalClick.ProjectSettings.Editor",
+    "name": "OneLastClick.ProjectSettings.Editor",
+    "rootNamespace": "OneLastClick.ProjectSettings.Editor",
     "references": [
-        "OneFinalClick.ProjectSettings.Runtime"
+        "OneLastClick.ProjectSettings.Runtime"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,4 +1,4 @@
-# OneFinalClick — Project Settings
+# OneLastClick — Project Settings
 
 A small lightweight Unity package that lets you store `ScriptableObject` settings in **Project Settings** instead of the `Assets` folder.
 
@@ -11,7 +11,7 @@ Add the package to your `manifest.json`:
 ```json
 {
   "dependencies": {
-    "io.onefinalclick.projectsettings": "https://github.com/OneFinalClick/io.onefinalclick.projectsettings.git?path=/Assets/Package"
+    "io.onefinalclick.projectsettings": "https://github.com/1LastClick/io.onefinalclick.projectsettings.git?path=/Assets/Package"
   }
 }
 ```
@@ -23,7 +23,7 @@ Add the package to your `manifest.json`:
 Add the attribute `[ProjectSettings]` to a ScriptableObject type.
 
 ```csharp
-using OneFinalClick.ProjectSettings;
+using OneLastClick.ProjectSettings;
 using UnityEngine;
 
 [ProjectSettings]
@@ -163,7 +163,7 @@ Example project structure:
 ```text
 ProjectSettings/
 ├── ExampleProjectSettings.asset
-└── OneFinalClick/
+└── OneLastClick/
     └── Example.asset
 ```
 

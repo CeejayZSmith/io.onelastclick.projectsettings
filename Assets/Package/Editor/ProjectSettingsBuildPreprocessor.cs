@@ -6,7 +6,7 @@ using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace OneFinalClick.ProjectSettings.Editor
+namespace OneLastClick.ProjectSettings.Editor
 {
     public class ProjectSettingsBuildPreprocessor : IProcessSceneWithReport, IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {

@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace OneFinalClick.ProjectSettings.Editor
+namespace OneLastClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsSettingsProvider
     {
