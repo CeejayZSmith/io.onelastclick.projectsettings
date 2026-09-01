@@ -1,4 +1,4 @@
-# OneFinalClick — Project Settings
+# OneLastClick — Project Settings
 
 A small lightweight Unity package that lets you store `ScriptableObject` settings in **Project Settings** instead of the `Assets` folder.
 
@@ -11,7 +11,7 @@ Add the package to your `manifest.json`:
 ```json
 {
   "dependencies": {
-    "io.onefinalclick.projectsettings": "https://github.com/OneFinalClick/io.onefinalclick.projectsettings.git?path=/Assets/Package"
+    "io.onelastclick.projectsettings": "https://github.com/ceejayzsmith/io.onelastclick.projectsettings.git?path=/Assets/Package"
   }
 }
 ```
@@ -23,7 +23,7 @@ Add the package to your `manifest.json`:
 Add the attribute `[ProjectSettings]` to a ScriptableObject type.
 
 ```csharp
-using OneFinalClick.ProjectSettings;
+using OneLastClick.ProjectSettings;
 using UnityEngine;
 
 [ProjectSettings]
@@ -92,9 +92,9 @@ ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
 ```csharp
 [ProjectSettings(
     fileName: "Example.asset",
-    fileDirectory: "FinalClick",
+    fileDirectory: "OneLastClick",
     settingsProviderName: "Example Settings",
-    settingsProviderDirectory: "FinalClick/Gameplay"
+    settingsProviderDirectory: "OneLastClick/Gameplay"
 )]
 public class ExampleProjectSettings : ScriptableObject
 {
@@ -117,7 +117,7 @@ public class ExampleProjectSettings : ScriptableObject
 
 ```csharp
 [ProjectSettings(
-    settingsProviderDirectory: "FinalClick/Rendering",
+    settingsProviderDirectory: "OneLastClick/Rendering",
     settingsProviderName: "Lighting Settings"
 )]
 public class LightingProjectSettings : ScriptableObject
@@ -128,7 +128,7 @@ public class LightingProjectSettings : ScriptableObject
 
 This appears under:
 
-> **Project Settings → FinalClick → Rendering → Lighting Settings**
+> **Project Settings → OneLastClick → Rendering → Lighting Settings**
 
 ---
 
@@ -163,7 +163,7 @@ Example project structure:
 ```text
 ProjectSettings/
 ├── ExampleProjectSettings.asset
-└── OneFinalClick/
+└── OneLastClick/
     └── Example.asset
 ```
 
