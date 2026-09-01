@@ -1,4 +1,4 @@
-# Project Settings - [Full Documentation Here](https://docs.onelastclick.io/packages/projectsettings/start-here/getting-started/)
+# Project Settings - [Full Documentation Here](https://docs.onelastclick.io/packages/project-settings/start-here/getting-started/)
 
 A small lightweight Unity package that lets you store `ScriptableObject` settings in **Project Settings** instead of the `Assets` folder. Add the attribute `[ProjectSettings]` to a ScriptableObject type.
 
