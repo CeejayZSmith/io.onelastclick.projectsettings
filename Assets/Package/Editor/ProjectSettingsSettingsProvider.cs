@@ -45,7 +45,10 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 guiHandler = _ =>
                 {
-                    if (editor == null) return;
+                    if (editor == null)
+                    {
+                        return;
+                    }
 
                     editor.serializedObject.Update();
 
