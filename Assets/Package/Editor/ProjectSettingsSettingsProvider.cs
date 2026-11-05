@@ -30,7 +30,7 @@ namespace OneLastClick.ProjectSettings.Editor
             {
                 label = ProjectSettingsEditorResolver.GetSettingsProviderName(type),
 
-                activateHandler = () =>
+                activateHandler = (_, _) =>
                 {
                     Debug.Assert(editor == null);
                     if (editor == null)
@@ -66,7 +66,7 @@ namespace OneLastClick.ProjectSettings.Editor
                     }
                 },
 
-                deactivateHandler = () =>
+                deactivateHandler = (_, _) =>
                 {
                     Debug.Assert(editor != null);
                     if (editor != null)
