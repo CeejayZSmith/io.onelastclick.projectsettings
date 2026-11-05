@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -30,28 +30,36 @@ namespace OneLastClick.ProjectSettings.Editor
             {
                 label = ProjectSettingsEditorResolver.GetSettingsProviderName(type),
 
+                activateHandler = () =>
+                {
+                    if (editor == null)
+                    {
+                        UnityEditor.Editor.CreateCachedEditor(
+                            ProjectSettingsEditorDatabase.GetOrCreateDefault(type),
+                            null,
+                            ref editor);
+                    }
+                    editor.serializedObject.Update();
+                },
+
                 guiHandler = _ =>
                 {
-                    var settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
-
-                    UnityEditor.Editor.CreateCachedEditor(
-                        settings,
-                        null,
-                        ref editor);
-
-                    editor.serializedObject.Update();
-
-                    EditorGUI.BeginChangeCheck();
-
-                    editor.OnInspectorGUI();
-
-                    if (EditorGUI.EndChangeCheck())
+                    if (editor != null)
                     {
-                        editor.serializedObject.ApplyModifiedProperties();
+                        editor.serializedObject.Update();
 
-                        EditorUtility.SetDirty(settings);
-                        ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
-                        UnityEngine.Object.DestroyImmediate(editor);
+                        EditorGUI.BeginChangeCheck();
+
+                        editor.OnInspectorGUI();
+
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            editor.serializedObject.ApplyModifiedProperties();
+
+                            EditorUtility.SetDirty(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
+                            ProjectSettingsEditorDatabase.SaveProjectSetting(editor);
+                            UnityEngine.Object.DestroyImmediate(editor);
+                        }
                     }
                 },
 
@@ -62,7 +70,7 @@ namespace OneLastClick.ProjectSettings.Editor
                         UnityEngine.Object.DestroyImmediate(editor);
                         editor = null;
                     }
-                    
+
                     ProjectSettingsEditorDatabase.ClearCacheForType(type);
                 }
             };
