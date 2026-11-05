@@ -66,7 +66,7 @@ namespace OneLastClick.ProjectSettings.Editor
                     }
                 },
 
-                deactivateHandler = (_, _) =>
+                deactivateHandler = () =>
                 {
                     Debug.Assert(editor != null);
                     if (editor != null)
