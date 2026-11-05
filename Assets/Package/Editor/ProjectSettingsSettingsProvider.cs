@@ -32,6 +32,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 activateHandler = () =>
                 {
+                    Debug.Assert(editor == null);
                     if (editor == null)
                     {
                         UnityEditor.Editor.CreateCachedEditor(
@@ -44,27 +45,27 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 guiHandler = _ =>
                 {
-                    if (editor != null)
+                    if (editor == null) return;
+
+                    editor.serializedObject.Update();
+
+                    EditorGUI.BeginChangeCheck();
+
+                    editor.OnInspectorGUI();
+
+                    if (EditorGUI.EndChangeCheck())
                     {
-                        editor.serializedObject.Update();
+                        editor.serializedObject.ApplyModifiedProperties();
 
-                        EditorGUI.BeginChangeCheck();
-
-                        editor.OnInspectorGUI();
-
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            editor.serializedObject.ApplyModifiedProperties();
-
-                            EditorUtility.SetDirty(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
-                            ProjectSettingsEditorDatabase.SaveProjectSetting(editor);
-                            UnityEngine.Object.DestroyImmediate(editor);
-                        }
+                        EditorUtility.SetDirty(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
+                        ProjectSettingsEditorDatabase.SaveProjectSetting(editor);
+                        UnityEngine.Object.DestroyImmediate(editor);
                     }
                 },
 
                 deactivateHandler = () =>
                 {
+                    Debug.Assert(editor != null);
                     if (editor != null)
                     {
                         UnityEngine.Object.DestroyImmediate(editor);
