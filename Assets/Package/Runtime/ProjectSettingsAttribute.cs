@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+using System;
 
 namespace OneLastClick.ProjectSettings
 {
@@ -8,9 +7,9 @@ namespace OneLastClick.ProjectSettings
     {
         private const string DefaultFileDirectory = "";
         
-        [CanBeNull] public readonly string FileName;
-        [CanBeNull] public readonly string SettingsProviderDirectory;
-        [CanBeNull] public readonly string SettingsProviderName;
+        public readonly string FileName;
+        public readonly string SettingsProviderDirectory;
+        public readonly string SettingsProviderName;
         public readonly bool EditorOnly;
         public readonly string FileDirectory;
 
