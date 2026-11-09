@@ -10,39 +10,52 @@ namespace OneLastClick.ProjectSettings
 
         public static T Get<T>() where T : ScriptableObject
         {
-            return Get(typeof(T)) as T;
+            return (T)Get(typeof(T));
         }
 
         public static ScriptableObject Get(Type type)
         {
             if (Application.isPlaying == false)
             {
-                throw new InvalidOperationException("This should not be called outside of playmode as no settings will be registered yet. Use ProjectSettingsEditorDatabase instead.");
+                throw new InvalidOperationException($"Cannot read project settings of type '{type}' outside of play mode, as nothing is registered yet. Read the settings through the project settings window while editing.");
             }
-            
-            Debug.Assert(typeof(ScriptableObject).IsAssignableFrom(type), $"type is not assignable to scriptableobject from {type.FullName}");
-            
-            if (CachedProjectSettings.TryGetValue(type, out var cachedObject) == true)
+
+            if (typeof(ScriptableObject).IsAssignableFrom(type) == false)
+            {
+                throw new ArgumentException($"'{type}' must derive from {nameof(ScriptableObject)} to be used as project settings.", nameof(type));
+            }
+
+            if (CachedProjectSettings.TryGetValue(type, out ScriptableObject cachedObject) == true)
             {
                 return cachedObject;
             }
-            
-            throw new ArgumentException($"No project settings of type '{type}'");
+
+            throw new ArgumentException($"No project settings of type '{type}' are registered.", nameof(type));
         }
 
         internal static void Register(Type referenceType, ScriptableObject referenceValue)
         {
-            Debug.Log("Registering " + referenceType.FullName + " to " + referenceValue);
-            CachedProjectSettings.Add(referenceType, referenceValue);
+            if (referenceType == null)
+            {
+                throw new ArgumentNullException(nameof(referenceType));
+            }
+
+            if (referenceValue == null)
+            {
+                throw new ArgumentNullException(nameof(referenceValue));
+            }
+
+            CachedProjectSettings[referenceType] = referenceValue;
         }
-        
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void OnSubsystemRegistration()
         {
+            Application.quitting -= OnApplicationQuitting;
             Application.quitting += OnApplicationQuitting;
             ClearCachedProjectSettings();
         }
-        
+
         private static void ClearCachedProjectSettings()
         {
             CachedProjectSettings.Clear();
