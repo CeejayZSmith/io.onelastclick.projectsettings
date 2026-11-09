@@ -23,7 +23,6 @@ namespace OneLastClick.ProjectSettings.Editor
 
         private static SettingsProvider CreateProvider(Type type)
         {
-
             UnityEditor.Editor editor = null;
 
             return new SettingsProvider(ProjectSettingsEditorResolver.GetSettingsProviderPath(type), SettingsScope.Project)
@@ -35,21 +34,18 @@ namespace OneLastClick.ProjectSettings.Editor
                     Debug.Assert(editor == null);
                     if (editor == null)
                     {
-                        UnityEditor.Editor.CreateCachedEditor(
-                            ProjectSettingsEditorDatabase.GetOrCreateDefault(type),
-                            null,
-                            ref editor);
+                        editor = UnityEditor.Editor.CreateEditor(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
                     }
                     editor.serializedObject.Update();
                 },
 
                 guiHandler = _ =>
                 {
-                    if (editor == null)
+                    if (editor.target == null)
                     {
                         return;
                     }
-
+                    
                     editor.serializedObject.Update();
 
                     EditorGUI.BeginChangeCheck();
@@ -60,9 +56,9 @@ namespace OneLastClick.ProjectSettings.Editor
                     {
                         editor.serializedObject.ApplyModifiedProperties();
 
-                        EditorUtility.SetDirty(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
-                        ProjectSettingsEditorDatabase.SaveProjectSetting(editor);
-                        UnityEngine.Object.DestroyImmediate(editor);
+                        ScriptableObject settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+                        EditorUtility.SetDirty(settings);
+                        ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
                     }
                 },
 
