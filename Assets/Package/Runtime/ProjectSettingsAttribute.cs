@@ -7,7 +7,7 @@ namespace OneLastClick.ProjectSettings
     public class ProjectSettingsAttribute : Attribute
     {
         private const string DefaultFileDirectory = "";
-        
+
         [CanBeNull] public readonly string FileName;
         [CanBeNull] public readonly string SettingsProviderDirectory;
         [CanBeNull] public readonly string SettingsProviderName;
