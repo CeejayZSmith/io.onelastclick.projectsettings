@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
@@ -8,14 +8,22 @@ using UnityEngine.SceneManagement;
 
 namespace OneLastClick.ProjectSettings.Editor
 {
+    [InitializeOnLoad]
     public class ProjectSettingsBuildPreprocessor : IProcessSceneWithReport, IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         private const string GeneratedTempDirectoryName = "_OneLastClickBuildTemp";
         private const string GeneratedDirectory = "Assets/" + GeneratedTempDirectoryName;
         private const string GeneratedContainerFilePath = GeneratedDirectory + "/BuiltProjectSettingsContainer.asset";
-        
+
         public int callbackOrder => -1;
-        
+
+        static ProjectSettingsBuildPreprocessor()
+        {
+            // Editor play mode never runs the build pipeline, so hand the
+            // runtime a way to build an equivalent container on demand.
+            ProjectSettingsRegisterer.EditorPlaymodeContainerProvider = CreateEditorPlaymodeContainer;
+        }
+
         public void OnPreprocessBuild(BuildReport report)
         {
             AssetDatabase.DeleteAsset(GeneratedDirectory);
@@ -28,27 +36,14 @@ namespace OneLastClick.ProjectSettings.Editor
             ScriptableObject[] editorSettings = GetEditorReferencesOfProjectSettings();
             BuiltProjectSettingsContainer.CreateAtAssetPath(editorSettings, GeneratedContainerFilePath);
         }
-        
+
         public void OnPostprocessBuild(BuildReport report)
         {
             AssetDatabase.DeleteAsset(GeneratedDirectory);
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void EditorPlaymodeInitialize()
-        {
-            ManuallyRegister();
-        }
-
         public void OnProcessScene(Scene scene, BuildReport report)
         {
-            // EditorPlaymodeInitialize handles editor play mode, as it needs
-            // to be created before Awake() of other objects.
-            if (Application.isPlaying == true)
-            {
-                return;
-            }
-
             // Only inject into the first boot scene.
             if (SceneManager.GetSceneAt(0) != scene)
             {
@@ -60,22 +55,22 @@ namespace OneLastClick.ProjectSettings.Editor
             Debug.Log($"Injecting ProjectSettings into {scene.name}");
         }
 
-        private static void ManuallyRegister()
+        private static BuiltProjectSettingsContainer CreateEditorPlaymodeContainer()
         {
-            ScriptableObject[] copies = GetEditorReferencesOfProjectSettings();
+            ScriptableObject[] editorSettings = GetEditorReferencesOfProjectSettings();
 
-            foreach (ScriptableObject settings in copies)
-            {
-                ProjectSettingsDatabase.Register(settings.GetType(), settings);
-            }
+            BuiltProjectSettingsContainer container = ScriptableObject.CreateInstance<BuiltProjectSettingsContainer>();
+            container.SetSettings(editorSettings);
+            return container;
         }
 
         private static void CreateBootRegisterer(Scene scene)
         {
-            var gameObject = new GameObject("ProjectSettingsRegisterer");
+            GameObject gameObject = new GameObject("ProjectSettingsRegisterer");
             SceneManager.MoveGameObjectToScene(gameObject, scene);
-            var registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
-            var container = AssetDatabase.LoadAssetAtPath<BuiltProjectSettingsContainer>(GeneratedContainerFilePath);
+
+            ProjectSettingsRegisterer registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
+            BuiltProjectSettingsContainer container = AssetDatabase.LoadAssetAtPath<BuiltProjectSettingsContainer>(GeneratedContainerFilePath);
             if (container == null)
             {
                 throw new InvalidOperationException($"Failed to load generated project settings container at '{GeneratedContainerFilePath}'.");
@@ -97,7 +92,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
             ScriptableObject[] projectSettings = new ScriptableObject[types.Length];
 
-            for (var i = 0; i < types.Length; i++)
+            for (int i = 0; i < types.Length; i++)
             {
                 Type type = types[i];
 

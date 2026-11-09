@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace OneLastClick.ProjectSettings
 {
     [DefaultExecutionOrder(-1000)]
-    internal partial class ProjectSettingsRegisterer : MonoBehaviour
+    public partial class ProjectSettingsRegisterer : MonoBehaviour
     {
         [SerializeField] private BuiltProjectSettingsContainer _builtProjectSettingsContainer;
 
@@ -14,8 +14,7 @@ namespace OneLastClick.ProjectSettings
             {
                 return;
             }
-            
-            Debug.Log("Registering project settings");
+
             DontDestroyOnLoad(gameObject);
 
             if (_builtProjectSettingsContainer == null)
@@ -23,14 +22,20 @@ namespace OneLastClick.ProjectSettings
                 Debug.LogError("No project settings container found.");
                 return;
             }
-            
-            foreach (ScriptableObject reference in _builtProjectSettingsContainer.Settings)
+
+            RegisterContainer(_builtProjectSettingsContainer);
+        }
+
+        internal static void RegisterContainer(BuiltProjectSettingsContainer container)
+        {
+            foreach (ScriptableObject reference in container.Settings)
             {
                 if (reference == null)
                 {
                     Debug.LogError("Missing project settings reference.");
                     continue;
                 }
+
                 Type projectSettingsType = reference.GetType();
                 ProjectSettingsDatabase.Register(projectSettingsType, reference);
             }
