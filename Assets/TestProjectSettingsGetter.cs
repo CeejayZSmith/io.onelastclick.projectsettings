@@ -8,4 +8,10 @@ public class TestProjectSettingsGetter : MonoBehaviour
         int number = ProjectSettingsDatabase.Get<TestProjectSettings>().Number;
         Debug.Log(number);
     }
+
+    private void Update()
+    {
+        int number = ProjectSettingsDatabase.Get<TestProjectSettings>().Number;
+        Debug.Log(number);
+    }
 }
