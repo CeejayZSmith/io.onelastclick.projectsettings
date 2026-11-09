@@ -71,7 +71,6 @@ namespace OneLastClick.ProjectSettings.Editor
             
             string filePath = ProjectSettingsEditorResolver.GetFilePathToSettingsAsset(projectSettingsType);
             UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new UnityEngine.Object[] { configObject }, filePath, true);
-            EditorReferences.Remove(projectSettingsType);
         }
 
         public static void ClearCacheForType(Type type)
