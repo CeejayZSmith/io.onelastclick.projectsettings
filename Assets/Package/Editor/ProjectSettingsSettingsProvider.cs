@@ -23,8 +23,8 @@ namespace OneLastClick.ProjectSettings.Editor
 
         private static SettingsProvider CreateProvider(Type type)
         {
-
             UnityEditor.Editor editor = null;
+            ScriptableObject settings = null;
 
             return new SettingsProvider(ProjectSettingsEditorResolver.GetSettingsProviderPath(type), SettingsScope.Project)
             {
@@ -32,14 +32,19 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 activateHandler = (_, _) =>
                 {
-                    Debug.Assert(editor == null);
+                    if (settings == null)
+                    {
+                        settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+                    }
+
                     if (editor == null)
                     {
                         UnityEditor.Editor.CreateCachedEditor(
-                            ProjectSettingsEditorDatabase.GetOrCreateDefault(type),
+                            settings,
                             null,
                             ref editor);
                     }
+
                     editor.serializedObject.Update();
                 },
 
@@ -60,20 +65,22 @@ namespace OneLastClick.ProjectSettings.Editor
                     {
                         editor.serializedObject.ApplyModifiedProperties();
 
-                        EditorUtility.SetDirty(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
-                        ProjectSettingsEditorDatabase.SaveProjectSetting(editor);
-                        UnityEngine.Object.DestroyImmediate(editor);
+                        settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+
+                        EditorUtility.SetDirty(settings);
+                        ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
                     }
                 },
 
                 deactivateHandler = () =>
                 {
-                    Debug.Assert(editor != null);
                     if (editor != null)
                     {
                         UnityEngine.Object.DestroyImmediate(editor);
                         editor = null;
                     }
+
+                    settings = null;
 
                     ProjectSettingsEditorDatabase.ClearCacheForType(type);
                 }
