@@ -59,6 +59,7 @@ namespace OneLastClick.ProjectSettings.Editor
                         ScriptableObject settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
                         EditorUtility.SetDirty(settings);
                         ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
+                        ProjectSettingsPlayModeRegistration.Refresh(settings);
                     }
                 },
 

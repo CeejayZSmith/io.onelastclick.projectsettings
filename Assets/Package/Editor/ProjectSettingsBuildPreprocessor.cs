@@ -34,16 +34,10 @@ namespace OneLastClick.ProjectSettings.Editor
             AssetDatabase.DeleteAsset(GeneratedDirectory);
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void EditorPlaymodeInitialize()
-        {
-            ManuallyRegister();
-        }
-
         public void OnProcessScene(Scene scene, BuildReport report)
         {
-            // EditorPlaymodeInitialize handles editor play mode, as it needs
-            // to be created before Awake() of other objects.
+            // Editor play mode is handled by ProjectSettingsPlayModeRegistration,
+            // which registers before the first scene loads its Awake calls.
             if (Application.isPlaying == true)
             {
                 return;
@@ -60,16 +54,6 @@ namespace OneLastClick.ProjectSettings.Editor
             Debug.Log($"Injecting ProjectSettings into {scene.name}");
         }
 
-        private static void ManuallyRegister()
-        {
-            ScriptableObject[] copies = GetEditorReferencesOfProjectSettings();
-
-            foreach (ScriptableObject settings in copies)
-            {
-                ProjectSettingsDatabase.Register(settings.GetType(), settings);
-            }
-        }
-
         private static void CreateBootRegisterer(Scene scene)
         {
             GameObject gameObject = new GameObject("ProjectSettingsRegisterer");
@@ -84,16 +68,20 @@ namespace OneLastClick.ProjectSettings.Editor
             registerer.SetBuiltProjectSettings(container);
         }
 
+        internal static Type[] GetProjectSettingsTypes()
+        {
+            return ProjectSettingsEditorResolver
+                .GetAllTypesWithProjectSettingAttribute()
+                .Where(type =>
+                    ProjectSettingsEditorResolver
+                        .GetProjectSettingsAttribute(type)
+                        .EditorOnly == false)
+                .ToArray();
+        }
+
         private static ScriptableObject[] GetEditorReferencesOfProjectSettings()
         {
-            Type[] types =
-                ProjectSettingsEditorResolver
-                    .GetAllTypesWithProjectSettingAttribute()
-                    .Where(type =>
-                        ProjectSettingsEditorResolver
-                            .GetProjectSettingsAttribute(type)
-                            .EditorOnly == false)
-                    .ToArray();
+            Type[] types = GetProjectSettingsTypes();
 
             ScriptableObject[] projectSettings = new ScriptableObject[types.Length];
 

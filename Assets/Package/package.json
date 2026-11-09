@@ -10,7 +10,7 @@
         "config",
         "project"
     ],
-    "version": "1.0.0",
+    "version": "1.1.0",
     "unity": "6000.0",
     "description": "An easy way to define project settings to access via editor or runtime code.",
     "documentationUrl": "https://docs.onelastclick.io/packages/project-settings/",
