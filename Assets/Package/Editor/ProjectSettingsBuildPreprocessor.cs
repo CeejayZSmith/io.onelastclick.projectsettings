@@ -13,9 +13,9 @@ namespace OneLastClick.ProjectSettings.Editor
         private const string GeneratedTempDirectoryName = "_OneLastClickBuildTemp";
         private const string GeneratedDirectory = "Assets/" + GeneratedTempDirectoryName;
         private const string GeneratedContainerFilePath = GeneratedDirectory + "/BuiltProjectSettingsContainer.asset";
-        
+
         public int callbackOrder => -1;
-        
+
         public void OnPreprocessBuild(BuildReport report)
         {
             AssetDatabase.DeleteAsset(GeneratedDirectory);
@@ -28,7 +28,7 @@ namespace OneLastClick.ProjectSettings.Editor
             ScriptableObject[] editorSettings = GetEditorReferencesOfProjectSettings();
             BuiltProjectSettingsContainer.CreateAtAssetPath(editorSettings, GeneratedContainerFilePath);
         }
-        
+
         public void OnPostprocessBuild(BuildReport report)
         {
             AssetDatabase.DeleteAsset(GeneratedDirectory);
@@ -72,10 +72,10 @@ namespace OneLastClick.ProjectSettings.Editor
 
         private static void CreateBootRegisterer(Scene scene)
         {
-            var gameObject = new GameObject("ProjectSettingsRegisterer");
+            GameObject gameObject = new GameObject("ProjectSettingsRegisterer");
             SceneManager.MoveGameObjectToScene(gameObject, scene);
-            var registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
-            var container = AssetDatabase.LoadAssetAtPath<BuiltProjectSettingsContainer>(GeneratedContainerFilePath);
+            ProjectSettingsRegisterer registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
+            BuiltProjectSettingsContainer container = AssetDatabase.LoadAssetAtPath<BuiltProjectSettingsContainer>(GeneratedContainerFilePath);
             if (container == null)
             {
                 throw new InvalidOperationException($"Failed to load generated project settings container at '{GeneratedContainerFilePath}'.");
@@ -97,7 +97,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
             ScriptableObject[] projectSettings = new ScriptableObject[types.Length];
 
-            for (var i = 0; i < types.Length; i++)
+            for (int i = 0; i < types.Length; i++)
             {
                 Type type = types[i];
 

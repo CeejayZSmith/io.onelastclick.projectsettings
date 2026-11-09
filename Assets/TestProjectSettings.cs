@@ -1,4 +1,4 @@
-using OneFinalClick.ProjectSettings;
+using OneLastClick.ProjectSettings;
 using UnityEngine;
 
 [ProjectSettings]
@@ -11,4 +11,3 @@ public class TestProjectSettings : ScriptableObject
         get => _number;
     }
 }
-

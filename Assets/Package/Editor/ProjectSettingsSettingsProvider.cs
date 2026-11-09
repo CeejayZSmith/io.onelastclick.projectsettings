@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -50,11 +50,11 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 guiHandler = _ =>
                 {
-                    if (editor == null)
+                    if (editor.target == null)
                     {
                         return;
                     }
-
+                    
                     editor.serializedObject.Update();
 
                     EditorGUI.BeginChangeCheck();
@@ -64,9 +64,7 @@ namespace OneLastClick.ProjectSettings.Editor
                     if (EditorGUI.EndChangeCheck())
                     {
                         editor.serializedObject.ApplyModifiedProperties();
-
                         settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
-
                         EditorUtility.SetDirty(settings);
                         ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
                     }
