@@ -17,7 +17,7 @@ namespace OneLastClick.ProjectSettings
         {
             if (Application.isPlaying == false)
             {
-                throw new InvalidOperationException($"Cannot read project settings of type '{type}' outside of play mode, as nothing is registered yet. Read the settings through the project settings window while editing.");
+                throw new InvalidOperationException($"Cannot read project settings of type '{type}' outside of play mode. Read the settings through the project settings window while editing.");
             }
 
             if (typeof(ScriptableObject).IsAssignableFrom(type) == false)
@@ -48,23 +48,9 @@ namespace OneLastClick.ProjectSettings
             CachedProjectSettings[referenceType] = referenceValue;
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void OnSubsystemRegistration()
-        {
-            Application.quitting -= OnApplicationQuitting;
-            Application.quitting += OnApplicationQuitting;
-            ClearCachedProjectSettings();
-        }
-
-        private static void ClearCachedProjectSettings()
+        internal static void Clear()
         {
             CachedProjectSettings.Clear();
-        }
-
-        private static void OnApplicationQuitting()
-        {
-            Application.quitting -= OnApplicationQuitting;
-            ClearCachedProjectSettings();
         }
     }
 }
