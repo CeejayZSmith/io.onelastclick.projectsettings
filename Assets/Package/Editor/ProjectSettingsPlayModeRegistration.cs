@@ -13,11 +13,21 @@ namespace OneLastClick.ProjectSettings.Editor
             AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
             AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
 
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-
             EditorApplication.delayCall -= OnDelayCall;
             EditorApplication.delayCall += OnDelayCall;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void OnBeforeSceneLoad()
+        {
+            // EnteredPlayMode fires after the first scene has loaded, so settings
+            // have to be registered here to be available to the first Awake calls.
+            if (Application.isPlaying == false)
+            {
+                return;
+            }
+
+            RegisterRuntimeProjectSettings();
         }
 
         private static void OnDelayCall()
@@ -32,14 +42,6 @@ namespace OneLastClick.ProjectSettings.Editor
             ProjectSettingsDatabase.Clear();
         }
 
-        private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
-        {
-            if (playModeStateChange == PlayModeStateChange.EnteredPlayMode)
-            {
-                RegisterRuntimeProjectSettings();
-            }
-        }
-
         internal static void Refresh(ScriptableObject settings)
         {
             if (Application.isPlaying == false)
@@ -47,14 +49,7 @@ namespace OneLastClick.ProjectSettings.Editor
                 return;
             }
 
-            Type type = settings.GetType();
-
-            if (IsRuntimeProjectSetting(type) == false)
-            {
-                return;
-            }
-
-            ProjectSettingsDatabase.Register(type, settings);
+            RegisterRuntimeProjectSetting(settings);
         }
 
         private static void CreateOrLoadAllProjectSettings()
@@ -64,11 +59,6 @@ namespace OneLastClick.ProjectSettings.Editor
             foreach (Type type in types)
             {
                 ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
-            }
-
-            if (Application.isPlaying == true)
-            {
-                RegisterRuntimeProjectSettings();
             }
         }
 
@@ -80,14 +70,21 @@ namespace OneLastClick.ProjectSettings.Editor
 
             foreach (Type type in types)
             {
-                if (IsRuntimeProjectSetting(type) == false)
-                {
-                    continue;
-                }
-
                 ScriptableObject settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
-                ProjectSettingsDatabase.Register(type, settings);
+                RegisterRuntimeProjectSetting(settings);
             }
+        }
+
+        private static void RegisterRuntimeProjectSetting(ScriptableObject settings)
+        {
+            Type type = settings.GetType();
+
+            if (IsRuntimeProjectSetting(type) == false)
+            {
+                return;
+            }
+
+            ProjectSettingsDatabase.Register(type, settings);
         }
 
         private static bool IsRuntimeProjectSetting(Type type)

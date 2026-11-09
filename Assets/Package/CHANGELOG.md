@@ -6,7 +6,7 @@
 
 - Settings are now registered once for the whole editor session instead of being registered when entering play mode and cleared when leaving play mode or quitting the editor. In the editor the registry is only rebuilt after a compilation, and a registered instance is refreshed when its settings are saved.
 - Editor-only settings are now created or loaded into the editor database right after a compilation instead of on first use.
-- The build preprocessor no longer injects a registerer into scenes while in editor play mode, as editor play mode already has its settings registered.
+- Editor play mode registration now happens before the first scene loads, so settings are available to every `Awake` call rather than only after play mode has been entered.
 
 ### Fixed
 

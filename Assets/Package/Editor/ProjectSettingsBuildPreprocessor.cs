@@ -36,6 +36,13 @@ namespace OneLastClick.ProjectSettings.Editor
 
         public void OnProcessScene(Scene scene, BuildReport report)
         {
+            // Editor play mode is handled by ProjectSettingsPlayModeRegistration,
+            // which registers before the first scene loads its Awake calls.
+            if (Application.isPlaying == true)
+            {
+                return;
+            }
+
             // Only inject into the first boot scene.
             if (SceneManager.GetSceneAt(0) != scene)
             {
