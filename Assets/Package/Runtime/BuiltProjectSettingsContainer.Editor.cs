@@ -8,29 +8,36 @@ namespace OneLastClick.ProjectSettings
     {
         public static void CreateAtAssetPath(ScriptableObject[] editorReferences, string assetPath)
         {
-            var container = CreateInstance<BuiltProjectSettingsContainer>();
-            container._settings = new ScriptableObject[editorReferences.Length];
+            BuiltProjectSettingsContainer container = CreateInstance<BuiltProjectSettingsContainer>();
 
             AssetDatabase.CreateAsset(container, assetPath);
-            
+
+            container = AssetDatabase.LoadAssetAtPath<BuiltProjectSettingsContainer>(assetPath);
+
+            if (container == null)
+            {
+                throw new System.InvalidOperationException($"Failed to create project settings container at '{assetPath}'.");
+            }
+
+            container._settings = new ScriptableObject[editorReferences.Length];
+
             for (int i = 0; i < editorReferences.Length; i++)
             {
-                var source = editorReferences[i];
+                ScriptableObject source = editorReferences[i];
 
                 if (source == null)
                 {
                     continue;
                 }
 
-                var copy = Instantiate(source);
-                copy.name = source.name;
+                ScriptableObject copy = Instantiate(source);
+                copy.name = $"{source.name}_{i}";
                 container._settings[i] = copy;
                 AssetDatabase.AddObjectToAsset(copy, container);
             }
 
             EditorUtility.SetDirty(container);
-            AssetDatabase.SaveAssetIfDirty(container);
-            AssetDatabase.ImportAsset(assetPath);
+            AssetDatabase.SaveAssets();
         }
     }
 }
