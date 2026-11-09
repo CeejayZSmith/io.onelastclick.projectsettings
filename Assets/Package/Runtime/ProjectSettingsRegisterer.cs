@@ -4,7 +4,7 @@ using UnityEngine;
 namespace OneLastClick.ProjectSettings
 {
     [DefaultExecutionOrder(-1000)]
-    internal partial class ProjectSettingsRegisterer : MonoBehaviour
+    public partial class ProjectSettingsRegisterer : MonoBehaviour
     {
         [SerializeField] private BuiltProjectSettingsContainer _builtProjectSettingsContainer;
 
