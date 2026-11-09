@@ -14,7 +14,7 @@ namespace OneLastClick.ProjectSettings
             {
                 return;
             }
-            
+
             Debug.Log("Registering project settings");
             DontDestroyOnLoad(gameObject);
 
@@ -23,7 +23,7 @@ namespace OneLastClick.ProjectSettings
                 Debug.LogError("No project settings container found.");
                 return;
             }
-            
+
             foreach (ScriptableObject reference in _builtProjectSettingsContainer.Settings)
             {
                 if (reference == null)

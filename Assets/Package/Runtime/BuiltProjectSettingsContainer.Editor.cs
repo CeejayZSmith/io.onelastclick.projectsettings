@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -8,21 +8,21 @@ namespace OneLastClick.ProjectSettings
     {
         public static void CreateAtAssetPath(ScriptableObject[] editorReferences, string assetPath)
         {
-            var container = CreateInstance<BuiltProjectSettingsContainer>();
+            BuiltProjectSettingsContainer container = CreateInstance<BuiltProjectSettingsContainer>();
             container._settings = new ScriptableObject[editorReferences.Length];
 
             AssetDatabase.CreateAsset(container, assetPath);
-            
+
             for (int i = 0; i < editorReferences.Length; i++)
             {
-                var source = editorReferences[i];
+                ScriptableObject source = editorReferences[i];
 
                 if (source == null)
                 {
                     continue;
                 }
 
-                var copy = Instantiate(source);
+                ScriptableObject copy = Instantiate(source);
                 copy.name = source.name;
                 container._settings[i] = copy;
                 AssetDatabase.AddObjectToAsset(copy, container);

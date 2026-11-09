@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +17,6 @@ namespace OneLastClick.ProjectSettings.Editor
                 !type.IsAbstract &&
                 type.GetCustomAttribute<ProjectSettingsAttribute>() != null).ToArray();
 
-        
         public static string GetFilePathToSettingsAsset<T>() where T : ScriptableObject => GetFilePathToSettingsAsset(typeof(T));
 
         public static string GetFilePathToSettingsAsset(Type type)
@@ -30,11 +29,11 @@ namespace OneLastClick.ProjectSettings.Editor
         {
             return GetSettingsProviderPath(typeof(T));
         }
-        
+
         public static string GetSettingsProviderName(Type type)
         {
             ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
-            
+
             if (string.IsNullOrEmpty(attribute.SettingsProviderName) == true)
             {
                 return GetFileName(type);
@@ -42,12 +41,12 @@ namespace OneLastClick.ProjectSettings.Editor
 
             return attribute.SettingsProviderName;
         }
-        
+
         public static string GetSettingsProviderPath(Type type)
         {
-            var name = GetSettingsProviderName(type);
+            string name = GetSettingsProviderName(type);
             ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
-            
+
             if (string.IsNullOrEmpty(attribute.SettingsProviderDirectory) == true)
             {
                 return $"Project/{name}";
@@ -67,7 +66,7 @@ namespace OneLastClick.ProjectSettings.Editor
                 return ex.Types.Where(t => t != null);
             }
         }
-        
+
         public static ProjectSettingsAttribute GetProjectSettingsAttribute<T>() where T : ScriptableObject
         {
             return GetProjectSettingsAttribute(typeof(T));
@@ -80,7 +79,7 @@ namespace OneLastClick.ProjectSettings.Editor
                 throw new InvalidOperationException($"{type.FullName} must inherit from {nameof(ScriptableObject)} to use {nameof(ProjectSettingsAttribute)}.");
             }
 
-            var attribute = type.GetCustomAttribute<ProjectSettingsAttribute>();
+            ProjectSettingsAttribute attribute = type.GetCustomAttribute<ProjectSettingsAttribute>();
 
             if (attribute == null)
             {
@@ -97,7 +96,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
         private static string GetFileName(Type type)
         {
-            var attribute = GetProjectSettingsAttribute(type);
+            ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
             if (string.IsNullOrEmpty(attribute.FileName) == true)
             {
                 return type.Name;
