@@ -60,8 +60,9 @@ namespace OneLastClick.ProjectSettings.Editor
                     {
                         editor.serializedObject.ApplyModifiedProperties();
 
-                        EditorUtility.SetDirty(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
-                        ProjectSettingsEditorDatabase.SaveProjectSetting(editor);
+                        ScriptableObject settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+                        EditorUtility.SetDirty(settings);
+                        ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
                         UnityEngine.Object.DestroyImmediate(editor);
                     }
                 },
