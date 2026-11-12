@@ -25,37 +25,50 @@ namespace OneLastClick.ProjectSettings.Editor
         {
             UnityEditor.Editor editor = null;
             ScriptableObject settings = null;
+            bool isSettingsRuntimeInstance = false;
 
             return new SettingsProvider(ProjectSettingsEditorResolver.GetSettingsProviderPath(type), SettingsScope.Project)
             {
                 label = ProjectSettingsEditorResolver.GetSettingsProviderName(type),
 
-                // The settings are loaded from disk when the provider opens and are kept only while it is open.
-                // Every other read of the settings reloads from disk, so edits made outside of Unity, such as
-                // discarding the settings file in git, are picked up the next time the provider opens.
-                activateHandler = (_, _) => ReloadEditor(type, ref settings, ref editor),
+                // NOTE: When Application.isPlaying is FALSE
+                //       The settings are loaded from disk when the provider opens and are kept only while it is open.
+                //       Every other read of the settings reloads from disk, so edits made outside of Unity, such as
+                //       discarding the settings file in git, are picked up the next time the provider opens.
+                
+                // NOTE: When Application.isPlaying is TRUE
+                //       We get the runtime settings instance, but we do not save any changes to disk. Instead, we
+                //       display a warning box to the Developer that their changes will be lost on exiting playmode
+                activateHandler = (_, _) => ReloadEditor(type, ref settings, ref isSettingsRuntimeInstance, ref editor),
 
                 guiHandler = _ =>
                 {
                     // If editor target is lost, reload config object from project settings and recreate editor.
-                    if (editor == null || editor.target == null)
+                    if (editor == null || editor.target == null || isSettingsRuntimeInstance != Application.isPlaying)
                     {
-                        ReloadEditor(type, ref settings, ref editor);
+                        ReloadEditor(type, ref settings, ref isSettingsRuntimeInstance, ref editor);
                     }
 
                     editor.serializedObject.Update();
 
+                    if (isSettingsRuntimeInstance == true)
+                    {
+                        DisplayPlaymodeWarning(settings);
+                    }
+                    
                     EditorGUI.BeginChangeCheck();
 
                     editor.OnInspectorGUI();
-
-                    if (EditorGUI.EndChangeCheck())
+                    
+                    if (EditorGUI.EndChangeCheck() == true)
                     {
                         editor.serializedObject.ApplyModifiedProperties();
 
                         EditorUtility.SetDirty(settings);
-                        ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
-                        ProjectSettingsPlayModeRegistration.Refresh(settings);
+                        if (isSettingsRuntimeInstance == false)
+                        {
+                            ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
+                        }
                     }
                 },
 
@@ -72,15 +85,51 @@ namespace OneLastClick.ProjectSettings.Editor
             };
         }
 
-        private static void ReloadEditor(Type type, ref ScriptableObject settings, ref UnityEditor.Editor editor)
+        private static void DisplayPlaymodeWarning(ScriptableObject settings)
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+            GUILayout.Label(
+                EditorGUIUtility.IconContent("console.warnicon"),
+                GUILayout.Width(24),
+                GUILayout.Height(36)
+            );
+
+            EditorGUILayout.LabelField(
+                "Changes made during Play Mode will be reverted when exiting Play Mode.",
+                EditorStyles.wordWrappedLabel
+            );
+
+            if (GUILayout.Button(
+                    "Save to Project",
+                    GUILayout.Width(120),
+                    GUILayout.Height(36)
+                ) == true)
+            {
+                ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private static void ReloadEditor(Type type, ref ScriptableObject settings, ref bool isRuntimeSettingsInstance, ref UnityEditor.Editor editor)
         {
             if (editor != null)
             {
                 UnityEngine.Object.DestroyImmediate(editor);
                 editor = null;
             }
-
-            settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+            
+            if (Application.isPlaying == true && ProjectSettingsDatabase.HasRegisteredProjectSettings == true)
+            {
+                isRuntimeSettingsInstance = true;
+                settings = ProjectSettingsDatabase.Get(type);
+            }
+            else
+            {
+                isRuntimeSettingsInstance = false;
+                settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+            }
 
             editor = UnityEditor.Editor.CreateEditor(settings);
             editor.serializedObject.Update();

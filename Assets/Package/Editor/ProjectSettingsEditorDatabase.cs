@@ -6,6 +6,22 @@ namespace OneLastClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsEditorDatabase
     {
+        public static ScriptableObject[] GetOrCreateRuntimeProjectSettings()
+        {
+            Type[] types = ProjectSettingsEditorResolver.GetAllRuntimeTypesWithProjectSettingAttribute();
+
+            ScriptableObject[] projectSettings = new ScriptableObject[types.Length];
+
+            for (int i = 0; i < types.Length; i++)
+            {
+                Type type = types[i];
+
+                projectSettings[i] = GetOrCreateDefault(type);
+            }
+
+            return projectSettings;
+        }
+        
         public static T GetOrCreateDefault<T>() where T : class
         {
             return GetOrCreateDefault(typeof(T)) as T;
@@ -15,7 +31,7 @@ namespace OneLastClick.ProjectSettings.Editor
         {
             Debug.Assert(typeof(ScriptableObject).IsAssignableFrom(type), $"type is not assignable to scriptableobject from {type.FullName}");
 
-            ProjectSettingsAttribute attribute = ProjectSettingsEditorResolver.GetProjectSettingsAttribute(type);
+            ProjectSettingsAttribute attribute = ProjectSettingsDatabase.GetProjectSettingsAttribute(type);
 
             if (attribute == null)
             {
