@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -25,8 +24,9 @@ namespace OneLastClick.ProjectSettings.Editor
                 AssetDatabase.CreateFolder("Assets", GeneratedTempDirectoryName);
             }
 
-            ScriptableObject[] editorSettings = GetEditorReferencesOfProjectSettings();
-            BuiltProjectSettingsContainer.CreateAtAssetPath(editorSettings, GeneratedContainerFilePath);
+            ScriptableObject[] settings = ProjectSettingsEditorDatabase.GetOrCreateRuntimeProjectSettings();
+            BuiltProjectSettingsContainer.CreateAtAssetPath(settings, GeneratedContainerFilePath);
+            DestroySettings(settings);
         }
 
         public void OnPostprocessBuild(BuildReport report)
@@ -57,8 +57,10 @@ namespace OneLastClick.ProjectSettings.Editor
         private static void CreateBootRegisterer(Scene scene)
         {
             GameObject gameObject = new GameObject("ProjectSettingsRegisterer");
-            SceneManager.MoveGameObjectToScene(gameObject, scene);
+           SceneManager.MoveGameObjectToScene(gameObject, scene);
             ProjectSettingsRegisterer registerer = gameObject.AddComponent<ProjectSettingsRegisterer>();
+            ProjectSettingsUnregisterer _ = gameObject.AddComponent<ProjectSettingsUnregisterer>();
+            
             BuiltProjectSettingsContainer container = AssetDatabase.LoadAssetAtPath<BuiltProjectSettingsContainer>(GeneratedContainerFilePath);
             if (container == null)
             {
@@ -68,31 +70,17 @@ namespace OneLastClick.ProjectSettings.Editor
             registerer.SetBuiltProjectSettings(container);
         }
 
-        internal static Type[] GetProjectSettingsTypes()
+        private static void DestroySettings(ScriptableObject[] projectSettings)
         {
-            return ProjectSettingsEditorResolver
-                .GetAllTypesWithProjectSettingAttribute()
-                .Where(type =>
-                    ProjectSettingsEditorResolver
-                        .GetProjectSettingsAttribute(type)
-                        .EditorOnly == false)
-                .ToArray();
-        }
-
-        private static ScriptableObject[] GetEditorReferencesOfProjectSettings()
-        {
-            Type[] types = GetProjectSettingsTypes();
-
-            ScriptableObject[] projectSettings = new ScriptableObject[types.Length];
-
-            for (int i = 0; i < types.Length; i++)
+            foreach (ScriptableObject settings in projectSettings)
             {
-                Type type = types[i];
+                if (settings == null)
+                {
+                    continue;
+                }
 
-                projectSettings[i] = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+                UnityEngine.Object.DestroyImmediate(settings);
             }
-
-            return projectSettings;
         }
     }
 }

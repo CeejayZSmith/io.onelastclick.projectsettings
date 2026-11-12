@@ -9,6 +9,16 @@ namespace OneLastClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsEditorResolver
     {
+        public static Type[] GetAllRuntimeTypesWithProjectSettingAttribute() => AppDomain.CurrentDomain
+            .GetAssemblies()
+            .SelectMany(GetTypesSafe)
+            .Where(type =>
+                type.IsClass &&
+                !type.IsAbstract &&
+                type.GetCustomAttribute<ProjectSettingsAttribute>() != null &&
+                type.GetCustomAttribute<ProjectSettingsAttribute>().EditorOnly == false
+                ).ToArray();
+        
         public static Type[] GetAllTypesWithProjectSettingAttribute() => AppDomain.CurrentDomain
             .GetAssemblies()
             .SelectMany(GetTypesSafe)
@@ -21,7 +31,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
         public static string GetFilePathToSettingsAsset(Type type)
         {
-            ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
+            ProjectSettingsAttribute attribute = ProjectSettingsDatabase.GetProjectSettingsAttribute(type);
             return Path.Combine("ProjectSettings", attribute.FileDirectory, $"{GetFileName(type)}.asset");
         }
 
@@ -32,7 +42,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
         public static string GetSettingsProviderName(Type type)
         {
-            ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
+            ProjectSettingsAttribute attribute = ProjectSettingsDatabase.GetProjectSettingsAttribute(type);
 
             if (string.IsNullOrEmpty(attribute.SettingsProviderName) == true)
             {
@@ -45,7 +55,7 @@ namespace OneLastClick.ProjectSettings.Editor
         public static string GetSettingsProviderPath(Type type)
         {
             string name = GetSettingsProviderName(type);
-            ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
+            ProjectSettingsAttribute attribute = ProjectSettingsDatabase.GetProjectSettingsAttribute(type);
 
             if (string.IsNullOrEmpty(attribute.SettingsProviderDirectory) == true)
             {
@@ -67,28 +77,6 @@ namespace OneLastClick.ProjectSettings.Editor
             }
         }
 
-        public static ProjectSettingsAttribute GetProjectSettingsAttribute<T>() where T : ScriptableObject
-        {
-            return GetProjectSettingsAttribute(typeof(T));
-        }
-
-        public static ProjectSettingsAttribute GetProjectSettingsAttribute(Type type)
-        {
-            if (typeof(ScriptableObject).IsAssignableFrom(type) == false)
-            {
-                throw new InvalidOperationException($"{type.FullName} must inherit from {nameof(ScriptableObject)} to use {nameof(ProjectSettingsAttribute)}.");
-            }
-
-            ProjectSettingsAttribute attribute = type.GetCustomAttribute<ProjectSettingsAttribute>();
-
-            if (attribute == null)
-            {
-                throw new InvalidOperationException($"{type.FullName} is missing [{nameof(ProjectSettingsAttribute)}].");
-            }
-
-            return attribute;
-        }
-
         private static string GetFileName<T>() where T : ScriptableObject
         {
             return GetFileName(typeof(T));
@@ -96,7 +84,7 @@ namespace OneLastClick.ProjectSettings.Editor
 
         private static string GetFileName(Type type)
         {
-            ProjectSettingsAttribute attribute = GetProjectSettingsAttribute(type);
+            ProjectSettingsAttribute attribute = ProjectSettingsDatabase.GetProjectSettingsAttribute(type);
             if (string.IsNullOrEmpty(attribute.FileName) == true)
             {
                 return type.Name;

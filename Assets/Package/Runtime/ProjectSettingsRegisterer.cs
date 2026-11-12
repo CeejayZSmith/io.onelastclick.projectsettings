@@ -1,9 +1,9 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace OneLastClick.ProjectSettings
 {
-    [DefaultExecutionOrder(-1000)]
+    // Register as early as possible so ProjectSettings are accessible in Awake functions.
+    [DefaultExecutionOrder(int.MinValue)] 
     internal partial class ProjectSettingsRegisterer : MonoBehaviour
     {
         [SerializeField] private BuiltProjectSettingsContainer _builtProjectSettingsContainer;
@@ -24,16 +24,7 @@ namespace OneLastClick.ProjectSettings
                 return;
             }
 
-            foreach (ScriptableObject reference in _builtProjectSettingsContainer.Settings)
-            {
-                if (reference == null)
-                {
-                    Debug.LogError("Missing project settings reference.");
-                    continue;
-                }
-                Type projectSettingsType = reference.GetType();
-                ProjectSettingsDatabase.Register(projectSettingsType, reference);
-            }
+            ProjectSettingsDatabase.RegisterProjectSettings(_builtProjectSettingsContainer.Settings);
         }
     }
 }
