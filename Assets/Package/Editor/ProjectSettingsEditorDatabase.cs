@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -7,8 +6,6 @@ namespace OneLastClick.ProjectSettings.Editor
 {
     public static class ProjectSettingsEditorDatabase
     {
-        private static Dictionary<Type, ScriptableObject> EditorReferences = new();
-
         public static T GetOrCreateDefault<T>() where T : class
         {
             return GetOrCreateDefault(typeof(T)) as T;
@@ -17,16 +14,6 @@ namespace OneLastClick.ProjectSettings.Editor
         public static ScriptableObject GetOrCreateDefault(Type type)
         {
             Debug.Assert(typeof(ScriptableObject).IsAssignableFrom(type), $"type is not assignable to scriptableobject from {type.FullName}");
-
-            if (EditorReferences.TryGetValue(type, out ScriptableObject editorReferences) == true)
-            {
-                if (editorReferences != null)
-                {
-                    return editorReferences;
-                }
-
-                EditorReferences.Remove(type);
-            }
 
             ProjectSettingsAttribute attribute = ProjectSettingsEditorResolver.GetProjectSettingsAttribute(type);
 
@@ -43,18 +30,17 @@ namespace OneLastClick.ProjectSettings.Editor
                 Directory.CreateDirectory(directory);
             }
 
+            // Nothing is cached here on purpose. Reading from disk every time means changes made to the
+            // settings file outside of Unity, such as discarding the file in git, are always picked up.
             UnityEngine.Object[] loadedObjects = UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(path);
             if (loadedObjects.Length > 0)
             {
                 Debug.Assert(loadedObjects.Length == 1, "Too many objects were loaded.");
                 Debug.Assert(type.IsAssignableFrom(loadedObjects[0].GetType()), $"saved object is not a {type.FullName}");
-                ScriptableObject loadedScriptableObject = loadedObjects[0] as ScriptableObject;
-                EditorReferences.Add(type, loadedScriptableObject);
-                return loadedScriptableObject;
+                return loadedObjects[0] as ScriptableObject;
             }
 
             ScriptableObject settings = ScriptableObject.CreateInstance(type);
-            EditorReferences.Add(type, settings);
             SaveProjectSetting(settings);
             Debug.Log("Creating new Settings asset.");
             return settings;

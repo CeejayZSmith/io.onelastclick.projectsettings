@@ -27,6 +27,10 @@ namespace OneLastClick.ProjectSettings.Editor
 
             ScriptableObject[] editorSettings = GetEditorReferencesOfProjectSettings();
             BuiltProjectSettingsContainer.CreateAtAssetPath(editorSettings, GeneratedContainerFilePath);
+
+            // The editor database does not cache settings, so the instances loaded above are temporary and
+            // the copies created by CreateAtAssetPath are the ones owned by the container asset.
+            DestroySettings(editorSettings);
         }
 
         public void OnPostprocessBuild(BuildReport report)
@@ -93,6 +97,19 @@ namespace OneLastClick.ProjectSettings.Editor
             }
 
             return projectSettings;
+        }
+
+        private static void DestroySettings(ScriptableObject[] projectSettings)
+        {
+            foreach (ScriptableObject settings in projectSettings)
+            {
+                if (settings == null)
+                {
+                    continue;
+                }
+
+                UnityEngine.Object.DestroyImmediate(settings);
+            }
         }
     }
 }

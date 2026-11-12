@@ -24,26 +24,25 @@ namespace OneLastClick.ProjectSettings.Editor
         private static SettingsProvider CreateProvider(Type type)
         {
             UnityEditor.Editor editor = null;
+            ScriptableObject settings = null;
 
             return new SettingsProvider(ProjectSettingsEditorResolver.GetSettingsProviderPath(type), SettingsScope.Project)
             {
                 label = ProjectSettingsEditorResolver.GetSettingsProviderName(type),
 
-                activateHandler = (_, _) =>
-                {
-                    Debug.Assert(editor == null, "We should not have an editor when activating.");
-                    editor = UnityEditor.Editor.CreateEditor(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
-                    editor.serializedObject.Update();
-                },
+                // The settings are loaded from disk when the provider opens and are kept only while it is open.
+                // Every other read of the settings reloads from disk, so edits made outside of Unity, such as
+                // discarding the settings file in git, are picked up the next time the provider opens.
+                activateHandler = (_, _) => ReloadEditor(type, ref settings, ref editor),
 
                 guiHandler = _ =>
                 {
                     // If editor target is lost, reload config object from project settings and recreate editor.
-                    if (editor.target == null)
+                    if (editor == null || editor.target == null)
                     {
-                        UpdateEditorWithNewUnityObject(ref editor, ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
+                        ReloadEditor(type, ref settings, ref editor);
                     }
-                    
+
                     editor.serializedObject.Update();
 
                     EditorGUI.BeginChangeCheck();
@@ -54,7 +53,6 @@ namespace OneLastClick.ProjectSettings.Editor
                     {
                         editor.serializedObject.ApplyModifiedProperties();
 
-                        ScriptableObject settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
                         EditorUtility.SetDirty(settings);
                         ProjectSettingsEditorDatabase.SaveProjectSetting(settings);
                         ProjectSettingsPlayModeRegistration.Refresh(settings);
@@ -66,19 +64,25 @@ namespace OneLastClick.ProjectSettings.Editor
                     Debug.Assert(editor != null, "We should always have an editor when deactivating.");
                     UnityEngine.Object.DestroyImmediate(editor);
                     editor = null;
+
+                    // The settings reference is dropped rather than destroyed because it can still be
+                    // registered in ProjectSettingsDatabase for the current play mode session.
+                    settings = null;
                 }
             };
         }
-        
-        private static void UpdateEditorWithNewUnityObject(ref UnityEditor.Editor editor, UnityEngine.Object obj)
+
+        private static void ReloadEditor(Type type, ref ScriptableObject settings, ref UnityEditor.Editor editor)
         {
             if (editor != null)
             {
                 UnityEngine.Object.DestroyImmediate(editor);
                 editor = null;
             }
-            
-            editor = UnityEditor.Editor.CreateEditor(obj);
+
+            settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+
+            editor = UnityEditor.Editor.CreateEditor(settings);
             editor.serializedObject.Update();
         }
     }

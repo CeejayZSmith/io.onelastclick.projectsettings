@@ -58,7 +58,10 @@ namespace OneLastClick.ProjectSettings.Editor
 
             foreach (Type type in types)
             {
-                ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+                // The editor database reloads settings from disk on every read, so the loaded instance is
+                // only needed here to make sure the settings asset exists. Nothing retains it afterwards.
+                ScriptableObject settings = ProjectSettingsEditorDatabase.GetOrCreateDefault(type);
+                UnityEngine.Object.DestroyImmediate(settings);
             }
         }
 

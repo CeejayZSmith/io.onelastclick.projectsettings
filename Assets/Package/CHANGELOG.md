@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.0] - 2026-11-12
+
+### Changed
+
+- `ProjectSettingsEditorDatabase` no longer caches settings objects. Settings are loaded from disk on every read, so edits made to the settings files outside of Unity, such as discarding them in git, are picked up without restarting the editor.
+- A settings entry in Edit → Project Settings loads its settings from disk when it opens and keeps that instance for as long as it stays open. Closing and reopening the entry reloads the settings from disk.
+
+### Fixed
+
+- Discarding a settings file in git while the editor is open no longer leaves the discarded values in memory. The next time the settings entry is opened, the values in the file are shown.
+
 ## [1.1.0] - 2026-05-31
 
 ### Changed
