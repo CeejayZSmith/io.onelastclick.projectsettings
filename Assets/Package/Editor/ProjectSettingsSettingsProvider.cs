@@ -31,19 +31,17 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 activateHandler = (_, _) =>
                 {
-                    Debug.Assert(editor == null);
-                    if (editor == null)
-                    {
-                        editor = UnityEditor.Editor.CreateEditor(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
-                    }
+                    Debug.Assert(editor == null, "We should not have an editor when activating.");
+                    editor = UnityEditor.Editor.CreateEditor(ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
                     editor.serializedObject.Update();
                 },
 
                 guiHandler = _ =>
                 {
+                    // If editor target is lost, reload config object from project settings and recreate editor.
                     if (editor.target == null)
                     {
-                        return;
+                        UpdateEditorWithNewUnityObject(ref editor, ProjectSettingsEditorDatabase.GetOrCreateDefault(type));
                     }
                     
                     editor.serializedObject.Update();
@@ -65,16 +63,23 @@ namespace OneLastClick.ProjectSettings.Editor
 
                 deactivateHandler = () =>
                 {
-                    Debug.Assert(editor != null);
-                    if (editor != null)
-                    {
-                        UnityEngine.Object.DestroyImmediate(editor);
-                        editor = null;
-                    }
-
-                    ProjectSettingsEditorDatabase.ClearCacheForType(type);
+                    Debug.Assert(editor != null, "We should always have an editor when deactivating.");
+                    UnityEngine.Object.DestroyImmediate(editor);
+                    editor = null;
                 }
             };
+        }
+        
+        private static void UpdateEditorWithNewUnityObject(ref UnityEditor.Editor editor, UnityEngine.Object obj)
+        {
+            if (editor != null)
+            {
+                UnityEngine.Object.DestroyImmediate(editor);
+                editor = null;
+            }
+            
+            editor = UnityEditor.Editor.CreateEditor(obj);
+            editor.serializedObject.Update();
         }
     }
 }
