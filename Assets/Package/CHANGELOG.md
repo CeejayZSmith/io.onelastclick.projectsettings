@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.1] - 2026-11-15
+
+### Fixed
+
+- Editor-only settings can now be edited while play mode is active. They are no longer swapped for a runtime instance, which does not exist for editor-only settings, so their entry in Edit → Project Settings stays editable during play mode and saves to disk as usual.
+
 ## [1.2.0] - 2026-11-12
 
 ### Changed

@@ -27,6 +27,11 @@ namespace OneLastClick.ProjectSettings.Editor
             ScriptableObject settings = null;
             bool isSettingsRuntimeInstance = false;
 
+            // NOTE: Editor only settings are never registered in ProjectSettingsDatabase, so the settings
+            //       loaded from disk are always the ones to display and edit, whether play mode is active or not.
+            ProjectSettingsAttribute attribute = ProjectSettingsDatabase.GetProjectSettingsAttribute(type);
+            bool isEditorOnly = attribute.EditorOnly;
+
             return new SettingsProvider(ProjectSettingsEditorResolver.GetSettingsProviderPath(type), SettingsScope.Project)
             {
                 label = ProjectSettingsEditorResolver.GetSettingsProviderName(type),
@@ -39,14 +44,20 @@ namespace OneLastClick.ProjectSettings.Editor
                 // NOTE: When Application.isPlaying is TRUE
                 //       We get the runtime settings instance, but we do not save any changes to disk. Instead, we
                 //       display a warning box to the Developer that their changes will be lost on exiting playmode
-                activateHandler = (_, _) => ReloadEditor(type, ref settings, ref isSettingsRuntimeInstance, ref editor),
+
+                // NOTE: For editor only settings
+                //       The settings are never registered in ProjectSettingsDatabase, so play mode makes no difference.
+                //       The settings loaded from disk are kept and edited as usual, with no reload on isPlaying changes.
+                activateHandler = (_, _) => ReloadEditor(type, isEditorOnly, ref settings, ref isSettingsRuntimeInstance, ref editor),
 
                 guiHandler = _ =>
                 {
                     // If editor target is lost, reload config object from project settings and recreate editor.
-                    if (editor == null || editor.target == null || isSettingsRuntimeInstance != Application.isPlaying)
+                    bool isPlayingStateChanged = isEditorOnly == false && isSettingsRuntimeInstance != Application.isPlaying;
+
+                    if (editor == null || editor.target == null || isPlayingStateChanged == true)
                     {
-                        ReloadEditor(type, ref settings, ref isSettingsRuntimeInstance, ref editor);
+                        ReloadEditor(type, isEditorOnly, ref settings, ref isSettingsRuntimeInstance, ref editor);
                     }
 
                     editor.serializedObject.Update();
@@ -112,15 +123,15 @@ namespace OneLastClick.ProjectSettings.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private static void ReloadEditor(Type type, ref ScriptableObject settings, ref bool isRuntimeSettingsInstance, ref UnityEditor.Editor editor)
+        private static void ReloadEditor(Type type, bool isEditorOnly, ref ScriptableObject settings, ref bool isRuntimeSettingsInstance, ref UnityEditor.Editor editor)
         {
             if (editor != null)
             {
                 UnityEngine.Object.DestroyImmediate(editor);
                 editor = null;
             }
-            
-            if (Application.isPlaying == true && ProjectSettingsDatabase.HasRegisteredProjectSettings == true)
+
+            if (isEditorOnly == false && Application.isPlaying == true && ProjectSettingsDatabase.HasRegisteredProjectSettings == true)
             {
                 isRuntimeSettingsInstance = true;
                 settings = ProjectSettingsDatabase.Get(type);
