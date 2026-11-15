@@ -13,3 +13,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExampleProjectSettings
   _number: 123
+  _spawnRadius: 2.5
+  _enableDebugLogs: 1
+  _logPrefix: Example
+  _cameraOffset: {x: 0, y: 2, z: -5}
+  _tintColor: {r: 0.2, g: 0.6, b: 1, a: 1}
+  _difficulty: 1
+  _levelNames:
+  - Tutorial
+  - Arena
+  - Boss
+  _enemySpawns:
+  - _enemyName: Grunt
+    _count: 3
+  - _enemyName: Brute
+    _count: 1
+  _network:
+    _host: localhost
+    _port: 7777
